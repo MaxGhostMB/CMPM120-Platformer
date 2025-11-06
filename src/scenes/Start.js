@@ -6,7 +6,7 @@ export class Start extends Phaser.Scene {
 
     preload() {
         this.load.image('background', 'assets/bg.png');
-        this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 16});
+        this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
     }
 
     create() {
@@ -23,14 +23,14 @@ export class Start extends Phaser.Scene {
 
         this.anims.create({
             key: 'idle',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
-            frameRate: 8,
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 1 }),
+            frameRate: 7,
             repeat: -1
         });
         this.anims.create({
             key: 'moving',
             frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
-            frameRate: 8,
+            frameRate: 10,
             repeat: -1
         });
     }
