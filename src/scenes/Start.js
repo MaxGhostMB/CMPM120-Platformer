@@ -7,14 +7,23 @@ export class Start extends Phaser.Scene {
     preload() {
         this.load.image('background', 'assets/bg.png');
         this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
+        this.load.image('tiles', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
+        this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
     }
 
     create() {
-        this.background = this.add.sprite(640, 320, 'background');
         this.last_time = 0;
+
+        this.map = this.make.tilemap({ key: 'map', tileWidth: 16, tileHeight: 16 });
+        this.tileset = map.addTilesetImage('tiles');
+        this.layer = map.createLayer('Level1', tileset);
+        this.map.setCollision([ 20, 48 ]);
         
         this.player = this.physics.add.sprite(50,100,'player',1);
         this.player.setScale(4);
+        this.player.setDepth(2);
+        this.physics.add.collider(this.player, this.layer);
+
 
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE, true, true);
         this.shift = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT, true, true);
@@ -39,6 +48,7 @@ export class Start extends Phaser.Scene {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
 
+        //Movement Handling
         this.player.body.setVelocityX(0);
 
         if (this.left.isDown && !(this.right.isDown))
@@ -52,6 +62,7 @@ export class Start extends Phaser.Scene {
             this.player.setFlipX(false);
         }
 
+        //Animation Handling
         if(!(this.left.isDown || this.right.isDown)) {
             this.player.anims.play('idle',true);
         } else {
