@@ -15,6 +15,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.coyote = 0;
         this.grounded = false;
         this.djump = true;
+        
+        this.body.setSize(16,8);
+        this.body.setOffset(0,7);
 
         // Animation setup
         this.createAnimations(scene);
@@ -24,7 +27,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.anims.create({
             key: 'idle',
             frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 1 }),
-            frameRate: 5,
+            frameRate: 4,
             repeat: -1
         });
 
@@ -48,10 +51,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Jumping
-        if (Phaser.Input.Keyboard.JustDown(this.space)) {
-            if (this.grounded) {
+        if(this.grounded) {
+            if(this.space.isDown) {
                 this.body.setVelocityY(-150);
-            } else if (this.djump) {
+            }
+        } else if (Phaser.Input.Keyboard.JustDown(this.space) && this.djump) {
+            //Prevents double jump from automatically happening
+            if(this.body.velocity.y > -100) {
                 this.body.setVelocityY(-250);
                 this.djump = false;
             }
@@ -77,7 +83,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Animation
-        if (!(this.left.isDown || this.right.isDown)) {
+        if (!(this.left.isDown ^ this.right.isDown)) {
             this.anims.play('idle', true);
         } else {
             this.anims.play('moving', true);
