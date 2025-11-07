@@ -12,6 +12,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.right = scene.input.keyboard.addKey("D");
 
         // Movement 
+        this.cur_speed = 0;
+        this.acceleration = 300;
+        this.drag = 600;
+        this.max_speed = 200;
         this.coyote = 0;
         this.grounded = false;
         this.djump = true;
@@ -41,14 +45,47 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     update(dt) {
         // Horizontal movement
-        this.body.setVelocityX(0);
-        if (this.left.isDown && !this.right.isDown) {
-            this.body.setVelocityX(-200);
-            this.setFlipX(true);
-        } else if (this.right.isDown && !this.left.isDown) {
-            this.body.setVelocityX(200);
-            this.setFlipX(false);
+        if (this.left.isDown) {
+            this.cur_speed -= this.acceleration * dt;
+            if(this.cur_speed < -this.max_speed) {                    
+                this.cur_speed = -this.max_speed;
+            }
+                this.setFlipX(true);
+        } else {
+            if(this.cur_speed < 0 && this.grounded) {
+                this.cur_speed += this.drag * dt;
+                if(Math.abs(this.cur_speed) < 10) {
+                    this.cur_speed = 0;
+                }
+            }
         }
+            
+        if (this.right.isDown) {
+            this.cur_speed += this.acceleration * dt;
+            if(this.cur_speed > this.max_speed) {
+                this.cur_speed = this.max_speed;
+            }
+            this.setFlipX(false);
+        } else {
+            if(this.cur_speed > 0 && this.grounded) {
+                this.cur_speed -= this.drag * dt;
+                if(Math.abs(this.cur_speed) < 10) {
+                    this.cur_speed = 0;
+                }
+            }
+        }
+        
+        this.body.setVelocityX(this.cur_speed);
+
+        //Old Horizontal Movement
+        //this.body.setVelocityX(0);
+        //if (this.left.isDown && !this.right.isDown) {
+        //    this.body.setVelocityX(-200);
+        //    this.setFlipX(true);
+        //} else if (this.right.isDown && !this.left.isDown) {
+        //    this.body.setVelocityX(200);
+        //    this.setFlipX(false);
+        //}
 
         // Jumping
         if(this.grounded) {
@@ -57,7 +94,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         } else if (Phaser.Input.Keyboard.JustDown(this.space) && this.djump) {
             //Prevents double jump from automatically happening
-            if(this.body.velocity.y > -100) {
+            if(this.body.velocity.y > -125) {
                 this.body.setVelocityY(-250);
                 this.djump = false;
             }
