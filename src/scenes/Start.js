@@ -30,7 +30,6 @@ export class Start extends Phaser.Scene {
         this.platlayer.setCollisionBetween(1,1767);
         this.physics.add.collider(this.platlayer, this.player);
 
-
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE, true, true);
         this.shift = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT, true, true);
         this.left = this.input.keyboard.addKey("A", true, true);
@@ -38,6 +37,7 @@ export class Start extends Phaser.Scene {
 
         this.coyote = 0;
         this.grounded = false;
+        this.djump = true;
 
         this.anims.create({
             key: 'idle',
@@ -71,7 +71,16 @@ export class Start extends Phaser.Scene {
             this.player.setFlipX(false);
         }
 
-        //Coyote Time
+        if(Phaser.Input.Keyboard.JustDown(this.space)) {
+            if(this.grounded) {
+                this.player.body.setVelocityY(-150);
+            } else if (this.djump) {
+                this.player.body.setVelocityY(-250);
+                this.djump = false;
+            }
+        }
+
+        //Grounded and Coyote Time
         if(!this.player.body.blocked.down)
         {
             this.coyote -= dt;
@@ -81,6 +90,7 @@ export class Start extends Phaser.Scene {
         } else {
             this.coyote = 0.1;
             this.grounded = true;
+            this.djump = true;
         }
 
         //Gravity
@@ -100,5 +110,4 @@ export class Start extends Phaser.Scene {
         }
         
     }
-    
 }
