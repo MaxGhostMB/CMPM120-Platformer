@@ -14,11 +14,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Movement 
         this.cur_speed = 0;
         this.acceleration = 300;
-        this.drag = 600;
+        this.drag = 700;
         this.max_speed = 200;
         this.coyote = 0;
         this.grounded = false;
         this.djump = true;
+        this.jumpDelay = 0.1
+        this.lwClimb = false;
+        this.rwClimb = false;
         
         this.body.setSize(16,8);
         this.body.setOffset(0,7);
@@ -45,12 +48,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     update(dt) {
         // Horizontal movement
-        if (this.left.isDown) {
-            this.cur_speed -= this.acceleration * dt;
-            if(this.cur_speed < -this.max_speed) {                    
-                this.cur_speed = -this.max_speed;
+        if (this.left.isDown && !this.right.isDown) {
+            if(this.body.blocked.left && this.cur_speed <= 0) {
+                this.cur_speed = 0;
+                this.lwClimb = true;
+            } else {
+                this.lwClimb = false;
+                this.cur_speed -= this.acceleration * dt;
+                if(this.cur_speed < -this.max_speed) {                    
+                    this.cur_speed = -this.max_speed;
+                }
+                    this.setFlipX(true);
             }
-                this.setFlipX(true);
         } else {
             if(this.cur_speed < 0 && this.grounded) {
                 this.cur_speed += this.drag * dt;
@@ -60,12 +69,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
             
-        if (this.right.isDown) {
-            this.cur_speed += this.acceleration * dt;
-            if(this.cur_speed > this.max_speed) {
-                this.cur_speed = this.max_speed;
+        if (this.right.isDown && !this.left.isDown) {
+            if(this.body.blocked.right && this.cur_speed >= 0) {
+                this.cur_speed = 0;
+                this.rwClimb = true;
+            } else {
+                this.rwClimb = false;
+                this.cur_speed += this.acceleration * dt;
+                if(this.cur_speed > this.max_speed) {
+                    this.cur_speed = this.max_speed;
+                }
+                this.setFlipX(false);
             }
-            this.setFlipX(false);
         } else {
             if(this.cur_speed > 0 && this.grounded) {
                 this.cur_speed -= this.drag * dt;
@@ -91,13 +106,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if(this.grounded) {
             if(this.space.isDown) {
                 this.body.setVelocityY(-150);
+                this.jumpDelay = 0.1;
             }
-        } else if (Phaser.Input.Keyboard.JustDown(this.space) && this.djump) {
-            //Prevents double jump from automatically happening
-            if(this.body.velocity.y > -125) {
-                this.body.setVelocityY(-250);
-                this.djump = false;
+        } else {
+            if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
+                if(this.djump) {
+                    this.body.setVelocityY(-250);
+                    this.djump = false;
+                    this.jumpDelay = 0.1;
+                }
             }
+        }
+
+        if(this.jumpDelay > 0) {
+            this.jumpDelay -= dt;
         }
 
         // Coyote time and grounded logic
@@ -113,10 +135,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Gravity adjustments
         if (this.grounded) {
             this.body.setGravityY(0);
-        } else if (this.body.velocity.y > 0) {
-            this.body.setGravityY(800);
-        } else {
+        } else if (this.body.velocity.y < 0) {
             this.body.setGravityY(600);
+        //} else if(this.lwClimb || this.rwClimb) {
+        //    this.body.setGravityY(100);
+        } else {
+            this.body.setGravityY(800);
         }
 
         // Animation
