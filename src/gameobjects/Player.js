@@ -63,12 +63,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         this.body.velocity.y = 0;
                     }
                     this.wallclimb = true;
-                    this.wallgrace = 0.1;
+                    this.wallgrace = 0.15;
                     this.clingtime += dt;
                 }
             //if holding left and you're not against a wall, accelerate
             } else {
-                this.wallclimb = false;
                 this.cur_speed -= this.acceleration * dt;
                 //Cap speed
                 if(this.cur_speed < -this.max_speed) {                    
@@ -104,12 +103,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         this.body.velocity.y = 0;
                     }
                     this.wallclimb = true;
-                    this.wallgrace = 0.1;
+                    this.wallgrace = 0.15;
                     this.clingtime += dt;
                 }
             //if holding right and youre not against a wall, accelerate
             } else {
-                this.wallclimb = false;
                 this.cur_speed += this.acceleration * dt;
                 //Cap speed
                 if(this.cur_speed > this.max_speed) {
@@ -157,6 +155,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if(this.jumpDelay > 0) {
             this.jumpDelay -= dt;
         }
+        
+        //wallgrace allows the player to jump off the wall and go the other direction easier;
+        if(this.wallgrace > 0) {
+            this.wallgrace -= dt;
+        } else {
+            this.wallclimb = false;
+        }
 
         // Coyote time and grounded logic
         if (!this.body.blocked.down) {
@@ -186,11 +191,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.anims.play('moving', true);
         } else {
             this.anims.play('idle', true);
-            //wallgrace allows the player to jump off the wall and go the other direction easier
-            this.wallgrace -= dt;
-            if(this.wallgrace < 0) {
-                this.wallclimb = false;
-            }
         }
     }
 }
