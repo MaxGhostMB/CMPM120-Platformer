@@ -8,6 +8,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Controls
         this.space = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.shift = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+        this.ctrl = scene.input.keyboard.addKey("S");
         this.left = scene.input.keyboard.addKey("A");
         this.right = scene.input.keyboard.addKey("D");
 
@@ -26,6 +28,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.wallclimb = false;
         this.wallgrace = 0;
         this.clingtime = 0;
+        this.dashing = false;
+        this.candash = false;
+        this.slamming = false;
         
         //Make collision match the sprite
         this.body.setSize(16,8);
@@ -52,85 +57,110 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update(dt) {
-        //Left movement
-        if (this.left.isDown && !this.right.isDown) {
-            //if holding left against a wall, cling to it
-            if(this.body.blocked.left && this.cur_speed <= 0) {
-                //Speed is set to -1 because the blocked check doesn't work if it's 0
-                this.cur_speed = -1;
-                if(this.body.velocity.y >= 0) {
-                    if(this.clingtime < this.maxclingtime) {
-                        this.body.velocity.y = 0;
+        //Horizontal movement
+        if(!this.dashing && !this.slamming) {
+            //Left movement
+            if (this.left.isDown && !this.right.isDown) {
+                //if holding left against a wall, cling to it
+                if(this.body.blocked.left && this.cur_speed <= 0) {
+                    //Speed is set to -1 because the blocked check doesn't work if it's 0
+                    this.cur_speed = -1;
+                    if(this.body.velocity.y >= 0) {
+                        if(this.clingtime < this.maxclingtime) {
+                            this.body.velocity.y = 0;
+                        }
+                        this.wallclimb = true;
+                        this.wallgrace = 0.15;
+                        this.clingtime += dt;
                     }
-                    this.wallclimb = true;
-                    this.wallgrace = 0.15;
-                    this.clingtime += dt;
-                }
-            //if holding left and you're not against a wall, accelerate
-            } else {
-                this.cur_speed -= this.acceleration * dt;
-                //Cap speed
-                if(this.cur_speed < -this.max_speed) {                    
-                    this.cur_speed = -this.max_speed;
-                }
-                this.setFlipX(true);
+                //if holding left and you're not against a wall, accelerate
+                } else {
+                    this.cur_speed -= this.acceleration * dt;
+                    //Cap speed
+                    if(this.cur_speed < -this.max_speed) {                    
+                        this.cur_speed = -this.max_speed;
+                    }
+                    this.setFlipX(true);
 
-            }
-        } else {
-            if(this.cur_speed < 0) {
-                //if you're moving left but not holding left and hit a wall, lose all momentum
-                if(this.body.blocked.left) {
-                    this.cur_speed = 0;
-                //if you're moving left but not holding left and on the ground, decelerate
-                } else if(this.grounded) {
-                    this.cur_speed += this.drag * dt;
-                    //prevents deceleration from making the player go right
-                    if(Math.abs(this.cur_speed) < 10) {
-                        this.cur_speed = 0;
-                    }
-                }  
-            }
-        }
-         
-        //Right movement
-        if (this.right.isDown && !this.left.isDown) {
-            //if holding right against a wall, cling to it
-            if(this.body.blocked.right && this.cur_speed >= 0) {
-                //Speed is set to 1 because the blocked check doesn't work if it's 0
-                this.cur_speed = 1;
-                if(this.body.velocity.y > 0) {
-                    if(this.clingtime < this.maxclingtime) {
-                        this.body.velocity.y = 0;
-                    }
-                    this.wallclimb = true;
-                    this.wallgrace = 0.15;
-                    this.clingtime += dt;
                 }
-            //if holding right and youre not against a wall, accelerate
             } else {
-                this.cur_speed += this.acceleration * dt;
-                //Cap speed
-                if(this.cur_speed > this.max_speed) {
-                    this.cur_speed = this.max_speed;
-                }
-                this.setFlipX(false);
-            }
-        } else {
-            if(this.cur_speed > 0) {
-                //if you are moving right but not holding right and hit a wall, lose all horizontal momentum
-                if(this.body.blocked.right) {
-                    this.cur_speed = 0;
-                //if you are on the ground, moving right but not holding right, decelerate
-                } else if (this.grounded) {
-                    this.cur_speed -= this.drag * dt;
-                    //prevents deceleration from making the player go left
-                    if(Math.abs(this.cur_speed) < 10) {
+                if(this.cur_speed < 0) {
+                    //if you're moving left but not holding left and hit a wall, lose all momentum
+                    if(this.body.blocked.left) {
                         this.cur_speed = 0;
+                    //if you're moving left but not holding left and on the ground, decelerate
+                    } else if(this.grounded) {
+                        this.cur_speed += this.drag * dt;
+                        //prevents deceleration from making the player go right
+                        if(Math.abs(this.cur_speed) < 10) {
+                            this.cur_speed = 0;
+                        }
+                    }  
+                }
+            }
+            
+            //Right movement
+            if (this.right.isDown && !this.left.isDown) {
+                //if holding right against a wall, cling to it
+                if(this.body.blocked.right && this.cur_speed >= 0) {
+                    //Speed is set to 1 because the blocked check doesn't work if it's 0
+                    this.cur_speed = 1;
+                    if(this.body.velocity.y > 0) {
+                        if(this.clingtime < this.maxclingtime) {
+                            this.body.velocity.y = 0;
+                        }
+                        this.wallclimb = true;
+                        this.wallgrace = 0.15;
+                        this.clingtime += dt;
+                    }
+                //if holding right and youre not against a wall, accelerate
+                } else {
+                    this.cur_speed += this.acceleration * dt;
+                    //Cap speed
+                    if(this.cur_speed > this.max_speed) {
+                        this.cur_speed = this.max_speed;
+                    }
+                    this.setFlipX(false);
+                }
+            } else {
+                if(this.cur_speed > 0) {
+                    //if you are moving right but not holding right and hit a wall, lose all horizontal momentum
+                    if(this.body.blocked.right) {
+                        this.cur_speed = 0;
+                    //if you are on the ground, moving right but not holding right, decelerate
+                    } else if (this.grounded) {
+                        this.cur_speed -= this.drag * dt;
+                        //prevents deceleration from making the player go left
+                        if(Math.abs(this.cur_speed) < 10) {
+                            this.cur_speed = 0;
+                        }
                     }
                 }
             }
         }
-        this.body.setVelocityX(this.cur_speed);
+
+        //Slamming keybind
+        if(!this.grounded && this.ctrl.isDown) {
+            this.slamming = true;
+        }
+
+        //Dashing
+        if(this.candash && !this.dashing) {
+            if(this.shift.isDown) {
+                if(this.left.isDown ^ this.right.isDown) {
+                    this.candash = false;
+                    this.dashing = true;
+                    this.slamming = false;
+                    this.body.velocity.y = 0;
+                    this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
+                    let dir = (this.right.isDown - this.left.isDown);
+                    setTimeout(() => {
+                        this.cur_speed = 100 * dir + 100 * (this.right.isDown - this.left.isDown);
+                        this.dashing = false;
+                    },125);
+                }
+            }
+        }
 
         // Jumping
         if(this.grounded) {
@@ -147,6 +177,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 } else if(this.djump) {
                     this.body.setVelocityY(-250);
                     this.djump = false;
+                    this.slamming = false;
                     this.jumpDelay = 0.1;
                     this.clingtime = 0;
                 }
@@ -155,7 +186,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if(this.jumpDelay > 0) {
             this.jumpDelay -= dt;
         }
-        
+
         //wallgrace allows the player to jump off the wall and go the other direction easier;
         if(this.wallgrace > 0) {
             this.wallgrace -= dt;
@@ -170,12 +201,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         } else {
             this.coyote = 0.1;
             this.grounded = true;
+            this.slamming = false;
             this.djump = true;
+            this.candash = true;
             this.clingtime = 0;
         }
 
+        //Slamming physics
+        if(this.slamming) {
+            this.cur_speed = 0;
+            this.body.setVelocityY(400);            
+        }
+
         // Gravity adjustments
-        if (this.grounded) {
+        if (this.grounded || this.dashing || this.slamming) {
             //If gravity is set to 0 coyote time becomes inconsistent, which also leads to inconsistent jump heights
             this.body.setGravityY(1);
         } else if (this.body.velocity.y < 0) {
@@ -186,8 +225,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.body.setGravityY(800);
         }
 
+        this.body.setVelocityX(this.cur_speed);
         // Animation
-        if (this.left.isDown ^ this.right.isDown) {
+        if (this.cur_speed != 0) {
             this.anims.play('moving', true);
         } else {
             this.anims.play('idle', true);
