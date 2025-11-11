@@ -29,14 +29,23 @@ export class Start extends Phaser.Scene {
         this.obslayer = this.map.createLayer("Obsticals", this.tileset, 0, 0);
         this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
         this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
-        this.doorlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
         
         // Collision
         this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
+
+        //Determine Spawnpoint
+        let spawnpoint = [0,0]
+        this.doorlayer.forEachTile(element => {
+           if(element.index == 57) {
+                spawnpoint[0] = element.x * 16 + 8;
+                spawnpoint[1] = element.y * 16 + 8;
+           }
+        });
         
         // Create a player
-        this.player = new Player(this, 100, 410, 'player', 1);
+        this.player = new Player(this, spawnpoint[0], spawnpoint[1], 'player', 1);
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
