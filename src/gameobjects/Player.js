@@ -197,6 +197,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     this.slamming = false;
                     this.jumpDelay = 0.1;
                     this.clingtime = 0;
+
+                    //djump particles
+                    this.scene.add.particles(0, 0, 'vapor', {
+                        anim: ['dissipate'],
+                        angle: { min: 0, max: 360 },
+                        x: this.x - 3 + Math.random() * 6,
+                        y: this.y - 2,
+                        speed: 15,
+                        frequency: 10,
+                        duration: 150,
+                        scale: 0.1
+                        
+                        //color: [0xFFFFFF, 0xFF0000]
+                    });
                 }
             }
         }
@@ -252,7 +266,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         //Particles
         if(this.dashing) {
-             this.particles = this.scene.add.particles(0, 0, 'vapor', {
+             this.scene.add.particles(0, 0, 'vapor', {
                 anim: ['dissipate'],
                 //angle: { min: 0, max: 360 },
                 x: this.x,
@@ -263,7 +277,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 scale: 0.1
                 //color: [0xFFFFFF, 0xFF0000]
             });
-            //setTimeout(() => {this.particles.destroy(true)}, 125);
         }
     }
 }
