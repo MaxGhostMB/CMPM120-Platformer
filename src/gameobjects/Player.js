@@ -30,6 +30,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.clingtime = 0;
         this.dashing = false;
         this.candash = false;
+        this.dashrepressed = false;
         this.slamming = false;
         
         //Make collision match the sprite
@@ -38,6 +39,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Animation setup
         this.createAnimations(scene);
+
+        this.scene = scene;
     }
 
     createAnimations(scene) {
@@ -53,6 +56,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             frames: scene.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
             frameRate: 10,
             repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'dissipate',
+            frames: this.anims.generateFrameNumbers('vapor', { start: 0, end: 24 }),
+            duration: 400
         });
     }
 
@@ -145,11 +154,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         //Dashing
-        if(this.candash && !this.dashing) {
+        if(this.candash && this.dashrepressed && !this.dashing) {
             if(this.shift.isDown) {
                 if(this.left.isDown ^ this.right.isDown) {
                     this.candash = false;
                     this.dashing = true;
+                    this.dashrepressed = false;
+
                     this.slamming = false;
                     this.body.velocity.y = 0;
                     this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
@@ -160,6 +171,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     },125);
                 }
             }
+        }
+
+        //Prevents holding shift to dash constantly while grounded, not using for the base dash check because it makes 
+        //inputting it feel weird
+        if(Phaser.Input.Keyboard.JustDown(this.shift) || Phaser.Input.Keyboard.JustDown(this.left) || Phaser.Input.Keyboard.JustDown(this.right)) {
+            this.dashrepressed = true;
         }
 
         // Jumping
@@ -231,6 +248,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.anims.play('moving', true);
         } else {
             this.anims.play('idle', true);
+        }
+
+        //Particles
+        if(this.dashing) {
+             this.particles = this.scene.add.particles(0, 0, 'vapor', {
+                anim: ['dissipate'],
+                //angle: { min: 0, max: 360 },
+                x: this.x,
+                y: this.y - 3 + Math.random() * 6,
+                speed: this.cur_speed/15,
+                //frequency: 1,
+                duration: 125,
+                scale: 0.1
+                //color: [0xFFFFFF, 0xFF0000]
+            });
+            //setTimeout(() => {this.particles.destroy(true)}, 125);
         }
     }
 }

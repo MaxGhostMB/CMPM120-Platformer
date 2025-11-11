@@ -9,6 +9,7 @@ export class Start extends Phaser.Scene {
     preload() {
         this.load.image('background', 'assets/bg.png');
         this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
+        this.load.spritesheet('vapor', 'assets/vapor_cloud.png', {frameWidth: 128, frameHeight: 128});
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('tutorial_map', 'assets/Tutorial.tmj');
