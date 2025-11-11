@@ -19,6 +19,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.drag = 1000;
         this.max_speed = 200;
         this.maxclingtime = 0.25;
+        this.maxwalljumps = 3;
 
         this.coyote = 0;
         this.grounded = false;
@@ -28,6 +29,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.wallclimb = false;
         this.wallgrace = 0;
         this.clingtime = 0;
+        this.walljumps = 0;
         this.dashing = false;
         this.candash = false;
         this.dashrepressed = false;
@@ -67,7 +69,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     update(dt) {
         //Horizontal movement
-        if(!this.dashing && !this.slamming) {
+        if(!this.slamming) {
             //Left movement
             if (this.left.isDown && !this.right.isDown) {
                 //if holding left against a wall, cling to it
@@ -80,20 +82,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         }
                         this.wallclimb = true;
                         this.wallgrace = 0.15;
-                        this.clingtime += dt;
+                        if(!this.dashing) this.clingtime += dt;
                     }
                 //if holding left and you're not against a wall, accelerate
                 } else {
-                    this.cur_speed -= this.acceleration * dt;
-                    //Cap speed
-                    if(this.cur_speed < -this.max_speed) {                    
-                        this.cur_speed = -this.max_speed;
+                    if(!this.dashing) {
+                        this.cur_speed -= this.acceleration * dt;
+                        //Cap speed
+                        if(this.cur_speed < -this.max_speed) {                    
+                            this.cur_speed = -this.max_speed;
+                        }
+                        this.setFlipX(true);
                     }
-                    this.setFlipX(true);
-
                 }
             } else {
-                if(this.cur_speed < 0) {
+                if(this.cur_speed < 0 && !this.dashing) {
                     //if you're moving left but not holding left and hit a wall, lose all momentum
                     if(this.body.blocked.left) {
                         this.cur_speed = 0;
@@ -124,15 +127,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     }
                 //if holding right and youre not against a wall, accelerate
                 } else {
-                    this.cur_speed += this.acceleration * dt;
-                    //Cap speed
-                    if(this.cur_speed > this.max_speed) {
-                        this.cur_speed = this.max_speed;
+                    if(!this.dashing) {
+                        this.cur_speed += this.acceleration * dt;
+                        //Cap speed
+                        if(this.cur_speed > this.max_speed) {
+                            this.cur_speed = this.max_speed;
+                        }
+                        this.setFlipX(false);
                     }
-                    this.setFlipX(false);
                 }
             } else {
-                if(this.cur_speed > 0) {
+                if(this.cur_speed > 0 && !this.dashing) {
                     //if you are moving right but not holding right and hit a wall, lose all horizontal momentum
                     if(this.body.blocked.right) {
                         this.cur_speed = 0;
@@ -154,21 +159,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         //Dashing
-        if(this.candash && this.dashrepressed && !this.dashing) {
+        if(this.dashrepressed && !this.dashing) {
             if(this.shift.isDown) {
                 if(this.left.isDown ^ this.right.isDown) {
-                    this.candash = false;
-                    this.dashing = true;
-                    this.dashrepressed = false;
+                    if(this.candash) {
+                        this.candash = false;
+                        this.dashing = true;
+                        this.dashrepressed = false;
 
-                    this.slamming = false;
-                    this.body.velocity.y = 0;
-                    this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
-                    let dir = (this.right.isDown - this.left.isDown);
-                    setTimeout(() => {
-                        this.cur_speed = 100 * dir + 100 * (this.right.isDown - this.left.isDown);
-                        this.dashing = false;
-                    },125);
+                        this.slamming = false;
+                        this.body.velocity.y = 0;
+                        this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
+                        let dir = (this.right.isDown - this.left.isDown);
+                        setTimeout(() => {
+                            this.cur_speed = 100 * dir + 100 * (this.right.isDown - this.left.isDown);
+                            this.dashing = false;
+                        },125);
+                    } else {
+                        this.tint = "0xFF9999";
+                        setTimeout(() => {this.tint = "0xFFFFFF"}, 150);
+                    }
                 }
             }
         }
@@ -187,10 +197,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         } else {
             if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
-                if(this.wallclimb && (this.left.isDown ^ this.right.isDown)) {
+                if(this.wallclimb && (this.left.isDown ^ this.right.isDown) && this.walljumps > 0) {
                     this.body.setVelocityY(-250);
                     this.clingtime = 0;
                     this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
+                    this.walljumps -= 1;
                 } else if(this.djump) {
                     this.body.setVelocityY(-250);
                     this.djump = false;
@@ -202,14 +213,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     this.scene.add.particles(0, 0, 'vapor', {
                         anim: ['dissipate'],
                         angle: { min: 0, max: 360 },
-                        x: this.x - 3 + Math.random() * 6,
-                        y: this.y - 2,
+                        x: this.x - 3 + Math.random() * 6 + this.cur_speed/20,
+                        y: this.y + this.body.velocity.y/50,
                         speed: 15,
                         frequency: 10,
                         duration: 125,
                         scale: 0.1,
                         color: [0xDDDDDD, 0x999999]
                     });
+                } else {
+                    this.tint = "0xFF9999";
+                    setTimeout(() => {this.tint = "0xFFFFFF"}, 150)
                 }
             }
         }
@@ -235,6 +249,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.djump = true;
             this.candash = true;
             this.clingtime = 0;
+            this.walljumps = this.maxwalljumps;
         }
 
         //Slamming physics
