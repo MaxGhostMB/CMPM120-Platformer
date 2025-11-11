@@ -206,10 +206,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         y: this.y - 2,
                         speed: 15,
                         frequency: 10,
-                        duration: 150,
-                        scale: 0.1
-                        
-                        //color: [0xFFFFFF, 0xFF0000]
+                        duration: 125,
+                        scale: 0.1,
+                        color: [0xDDDDDD, 0x999999]
                     });
                 }
             }
@@ -272,10 +271,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 x: this.x,
                 y: this.y - 3 + Math.random() * 6,
                 speed: this.cur_speed/15,
-                //frequency: 1,
+                frequency: 25,
                 duration: 125,
-                scale: 0.1
-                //color: [0xFFFFFF, 0xFF0000]
+                scale: 0.1,
+                color: [0xDDDDDD, 0x999999]
             });
         }
     }
