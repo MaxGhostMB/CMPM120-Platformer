@@ -192,7 +192,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Jumping
         if(this.grounded) {
             if(this.space.isDown) {
-                this.body.setVelocityY(-200);
+                this.body.setVelocityY(-175); // jump a bit higher 
                 this.jumpDelay = 0.1;
             }
         } else {
