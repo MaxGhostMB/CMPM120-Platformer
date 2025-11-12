@@ -192,7 +192,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Jumping
         if(this.grounded) {
             if(this.space.isDown) {
-                this.body.setVelocityY(-150);
+                this.body.setVelocityY(-200);
                 this.jumpDelay = 0.1;
             }
         } else {
@@ -230,6 +230,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if(this.jumpDelay > 0) {
             this.jumpDelay -= dt;
         }
+        if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown) {
+            this.body.setVelocityY(this.body.velocity.y * 0.5);
+        }
 
         //wallgrace allows the player to jump off the wall and go the other direction easier;
         if(this.wallgrace > 0) {
@@ -263,11 +266,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             //If gravity is set to 0 coyote time becomes inconsistent, which also leads to inconsistent jump heights
             this.body.setGravityY(1);
         } else if (this.body.velocity.y < 0) {
-            this.body.setGravityY(600);
+            this.body.setGravityY(800);
         } else if(this.wallclimb) {
             this.body.setGravityY(300);
         } else {
-            this.body.setGravityY(800);
+            this.body.setGravityY(1000);
         }
 
         this.body.setVelocityX(this.cur_speed);

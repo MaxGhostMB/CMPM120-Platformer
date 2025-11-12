@@ -1,10 +1,9 @@
 import { Player } from '../gameobjects/Player.js';
-import { Level_one } from '../scenes/Level_one.js';
 
-export class Start extends Phaser.Scene {
+export class Level_one extends Phaser.Scene {
 
     constructor() {
-        super('Start');
+        super('Level_one');
     }
 
     preload() {
@@ -13,14 +12,14 @@ export class Start extends Phaser.Scene {
         this.load.spritesheet('vapor', 'assets/vapor_cloud.png', {frameWidth: 128, frameHeight: 128});
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
-        this.load.tilemapTiledJSON('tutorial_map', 'assets/Tutorial.tmj');
+        this.load.tilemapTiledJSON('Level_1_map', 'assets/LevelOne.tmj');
     }
 
     create() {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 16;
 
-        this.map = this.make.tilemap({ key: 'tutorial_map', tileWidth: 16, tileHeight: 16 });
+        this.map = this.make.tilemap({ key: 'Level_1_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
 
         // Make all layers
@@ -42,12 +41,14 @@ export class Start extends Phaser.Scene {
         //Determine Spawnpoint
         let spawnpoint = [0,0]
         this.doorlayer.forEachTile(element => {
-           if(element.index == 57) {
+           if(element.index == 60) {
                 spawnpoint[0] = element.x * 16 + 8;
                 spawnpoint[1] = element.y * 16 + 8;
+                // console.log("X: " + (element.x * 16 + 8) + "Y: " + (element.y * 16 + 8))
            }
 
         });
+        // console.log("Spawnpoint: " + spawnpoint)
         
         // Create a player
         this.player = new Player(this, spawnpoint[0], spawnpoint[1], 'player', 1);
@@ -111,14 +112,10 @@ export class Start extends Phaser.Scene {
             if (tile.index === 58) { // make sure this is the correct tile index for your door
                 if (this.keyCollected) {
                     console.log('Door unlocked!');
-                    this.cameras.main.fadeOut(1000, 0, 0, 0);
-                    this.physics.world.removeCollider(this.doorCollider);
 
-                    // Delay scene transition by 1 second
                     this.time.delayedCall(1000, () => {
-                        this.scene.start('Level_one'); // use scene key, not class
+                        
                     });
-                    
                 } else {
                     console.log('The door is locked.');
                 }
