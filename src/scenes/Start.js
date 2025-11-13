@@ -31,26 +31,50 @@ export class Start extends Phaser.Scene {
         this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
         this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
         this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
         this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
-        this.doorlayer.setCollision(58);
+        //this.doorlayer.setCollision(58);
 
-        //this.locked = this.physics.add.staticGroup();
+        this.exit = this.physics.add.staticGroup();
+        this.pickups = this.physics.add.staticGroup();
+        this.spikes = this.physics.add.staticGroup();
 
-        //Determine Spawnpoint
-        let spawnpoint = [0,0]
-        this.doorlayer.forEachTile(element => {
-           if(element.index == 57) {
-                spawnpoint[0] = element.x * 16 + 8;
-                spawnpoint[1] = element.y * 16 + 8;
-           }
+        this.spawnpoint = [0,0];
 
+        this.objlayer.objects.forEach(objData => {
+            const {x = 0, y = 0, name, width = 0, height = 0} = objData;
+            switch(name) {
+                case "Exit":
+                    const exi = this.exit.create(x + (width * 0.5), y + (height * 0.5), null);
+                    exi.setOrigin(0.5);
+                    exi.setSize(width, height);
+                    exi.setVisible(false);
+                case "Key":
+                    const pickup = this.pickups.create(x + (width * 0.5), y + (height * 0.5), null);
+                    pickup.setOrigin(0.5);
+                    pickup.setSize(width, height);
+                    pickup.setVisible(false);
+                    pickup.setData('type', name);
+                    break;
+                case "Spawn":
+                    this.spawnpoint = [x + 8,y + 8];
+                    break;
+                case "Spikes":
+                    const rect = this.spikes.create(x + (width * 0.5), y + (height * 0.5), null);
+                    rect.setOrigin(0.5);
+                    rect.setSize(width, height);
+                    rect.setVisible(false);
+                    break;
+                default:
+                    console.log("Unknown object: " + name);
+            }
         });
-        
+
         // Create a player
-        this.player = new Player(this, spawnpoint[0], spawnpoint[1], 'player', 1);
+        this.player = new Player(this, this.spawnpoint[0], this.spawnpoint[1], 'player', 1);
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
@@ -69,27 +93,18 @@ export class Start extends Phaser.Scene {
             this.map.heightInPixels
         );
 
-        // Pickup logic:
-        this.pickups = this.physics.add.staticGroup();
-
-        this.map.forEachTile(tile => {
-            if(tile.layer.name === 'Items' && tile.index !== -1) { 
-                const x = tile.getCenterX();
-                const y = tile.getCenterY();
-
-                const pickup = this.pickups.create(x, y, null);
-                pickup.setOrigin(0.5);
-                pickup.setSize(tile.width, tile.height);
-                pickup.setVisible(false);
-                pickup.setData('tileIndex', tile.index);
-            }
+        //Spike collision
+        this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
+            console.log(`Player hit spikes ouchie`);
         });
 
+        //Overlaps seem to have a bit of lag when interacting with them
+        //Pickup Interactions
         this.physics.add.overlap(this.player, this.pickups, (player, pickup) => {
-            console.log(`Picked up tile ${pickup.getData('tileIndex')} at (${pickup.x}, ${pickup.y})`);
-            const tileIndex = pickup.getData('tileIndex');
+            console.log(`Picked up tile ${pickup.getData('type')} at (${pickup.x}, ${pickup.y})`);
+            const type = pickup.getData('type');
 
-            if(tileIndex === 97) {
+            if(type === "Key") {
                 this.keyCollected = true;
                 console.log(`Key Collected`);
             }
@@ -97,31 +112,24 @@ export class Start extends Phaser.Scene {
 
             const tileX = this.map.worldToTileX(pickup.x);
             const tileY = this.map.worldToTileY(pickup.y);
+            //this creates a small lagspike for some reason
             this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
-        this.itemlayer.forEachTile(tile => {
-            if (tile.index !== -1) {
-                this.add.rectangle(tile.getCenterX(), tile.getCenterY(), tile.width, tile.height, 0x00ff00, 0.3);
-            }
-        });
-
         // door unlock
-        this.physics.add.collider(this.player, this.doorlayer, (player, tile) => {
-            if (tile.index === 58) { // make sure this is the correct tile index for your door
-                if (this.keyCollected) {
-                    console.log('Door unlocked!');
-                    this.cameras.main.fadeOut(1000, 0, 0, 0);
-                    this.physics.world.removeCollider(this.doorCollider);
+        this.physics.add.overlap(this.player, this.exit, (player, exit) => {
+            if (this.keyCollected) {
+                console.log('Door unlocked!');
+                this.cameras.main.fadeOut(1000, 0, 0, 0);
 
-                    // Delay scene transition by 1 second
-                    this.time.delayedCall(1000, () => {
-                        this.scene.start('Level_one'); // use scene key, not class
-                    });
-                    
-                } else {
-                    console.log('The door is locked.');
-                }
+                // Delay scene transition by 1 second
+                this.time.delayedCall(1000, () => {
+                    this.scene.stop("Start");
+                    this.scene.start('Level_one'); // use scene key, not class
+                });
+                
+            } else {
+                console.log('The door is locked.');
             }
         });
     }

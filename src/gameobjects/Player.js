@@ -158,6 +158,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.slamming = true;
         }
 
+        //Prevents holding shift to dash constantly while grounded, not using for the base dash check because it makes 
+        //inputting it feel weird
+        if(Phaser.Input.Keyboard.JustDown(this.shift) || Phaser.Input.Keyboard.JustDown(this.left) || Phaser.Input.Keyboard.JustDown(this.right)) {
+            if(!this.dashing) this.dashrepressed = true;
+        }
+
         //Dashing
         if(this.dashrepressed && !this.dashing) {
             if(this.shift.isDown) {
@@ -183,27 +189,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        //Prevents holding shift to dash constantly while grounded, not using for the base dash check because it makes 
-        //inputting it feel weird
-        if(Phaser.Input.Keyboard.JustDown(this.shift) || Phaser.Input.Keyboard.JustDown(this.left) || Phaser.Input.Keyboard.JustDown(this.right)) {
-            this.dashrepressed = true;
-        }
-
         // Jumping
         if(this.grounded) {
             if(this.space.isDown) {
-                this.body.setVelocityY(-175); // jump a bit higher 
+                this.coyote = 0; //Prevents Coyote time from contributing to jump height
+                this.body.setVelocityY(-225); // jump a bit higher 
                 this.jumpDelay = 0.1;
             }
         } else {
             if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
                 if(this.wallclimb && (this.left.isDown ^ this.right.isDown) && this.walljumps > 0) {
+                    //walljumps dont work sometimes, need to test more
                     this.body.setVelocityY(-250);
                     this.clingtime = 0;
                     this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
                     this.walljumps -= 1;
                 } else if(this.djump) {
-                    this.body.setVelocityY(-250);
+                    this.body.setVelocityY(-275);
                     this.djump = false;
                     this.slamming = false;
                     this.jumpDelay = 0.1;
@@ -230,6 +232,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if(this.jumpDelay > 0) {
             this.jumpDelay -= dt;
         }
+        //If you dont hold space you dont jump as high
         if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown) {
             this.body.setVelocityY(this.body.velocity.y * 0.5);
         }
@@ -294,7 +297,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 scale: 0.1,
                 color: [0xDDDDDD, 0x999999]
             });
-        }
+        }   
     }
 }
 

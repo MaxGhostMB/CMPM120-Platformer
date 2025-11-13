@@ -10,7 +10,7 @@ const config = {
     height: 256,
     backgroundColor: '#000000',
     pixelArt: false,
-    physics: {default: "arcade"},
+    physics: {default: "arcade", arcade:{debug:true}},
     scene: [
         Start,
         Level_one
