@@ -34,11 +34,12 @@ export class Level_one extends Phaser.Scene {
         this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
-        this.platlayer.setCollisionBetween(1,1767);
+        //this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
         //this.doorlayer.setCollision(58);
 
         this.exit = this.physics.add.staticGroup();
+        this.platforms = this.physics.add.staticGroup();
         this.pickups = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
 
@@ -58,6 +59,12 @@ export class Level_one extends Phaser.Scene {
                     pickup.setSize(width, height);
                     pickup.setVisible(false);
                     pickup.setData('type', name);
+                    break;
+                case "Platform":
+                    const plat = this.platforms.create(x + (width * 0.5), y + (height * 0.5), null);
+                    plat.setOrigin(0.5);
+                    plat.setSize(width, height);
+                    plat.setVisible(false);
                     break;
                 case "Spawn":
                     this.spawnpoint = [x + 8,y + 8];
@@ -97,6 +104,9 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
         });
+
+        //Platforms
+        this.physics.add.collider(this.player,this.platforms);
 
         //Overlaps seem to have a bit of lag when interacting with them
         //Pickup Interactions

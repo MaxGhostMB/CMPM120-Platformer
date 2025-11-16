@@ -35,12 +35,13 @@ export class Start extends Phaser.Scene {
         this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
-        this.platlayer.setCollisionBetween(1,1767);
+        //this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
         //this.doorlayer.setCollision(58);
 
         this.exit = this.physics.add.staticGroup();
         this.pickups = this.physics.add.staticGroup();
+        this.platforms = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
 
         this.spawnpoint = [0,0];
@@ -59,6 +60,12 @@ export class Start extends Phaser.Scene {
                     pickup.setSize(width, height);
                     pickup.setVisible(false);
                     pickup.setData('type', name);
+                    break;
+                case "Platform":
+                    const plat = this.platforms.create(x + (width * 0.5), y + (height * 0.5), null);
+                    plat.setOrigin(0.5);
+                    plat.setSize(width, height);
+                    plat.setVisible(false);
                     break;
                 case "Spawn":
                     this.spawnpoint = [x + 8,y + 8];
@@ -98,7 +105,14 @@ export class Start extends Phaser.Scene {
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
+            if(this.keyCollected) {
+                this.keyCollected = false;
+                this.itemlayer.setVisible(true);
+            }
         });
+
+        //Platforms
+        this.physics.add.collider(this.player,this.platforms);
 
         //Overlaps seem to have a bit of lag when interacting with them
         //Pickup Interactions
@@ -107,15 +121,17 @@ export class Start extends Phaser.Scene {
             const type = pickup.getData('type');
 
             if(type === "Key") {
-                this.keyCollected = true;
-                console.log(`Key Collected`);
+                this.keyCollected = true;  
+            } else {
+                pickup.destroy();
             }
-            pickup.destroy();
+
+            this.itemlayer.setVisible(false);
 
             const tileX = this.map.worldToTileX(pickup.x);
             const tileY = this.map.worldToTileY(pickup.y);
             //this creates a small lagspike for some reason
-            this.map.removeTileAt(tileX, tileY, false, false, 'Items');
+            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
         // door unlock

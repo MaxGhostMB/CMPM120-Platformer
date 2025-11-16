@@ -502,6 +502,61 @@
                  "width":13.1736526946108,
                  "x":449.700598802395,
                  "y":578.443113772455
+                }, 
+                {
+                 "height":6.75,
+                 "id":23,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":303.968076950506,
+                 "y":543.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":24,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":223.411362501783,
+                 "y":575.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":25,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":271.4,
+                 "y":335.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":26,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":319.9375,
+                 "y":399.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":27,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":288.125,
+                 "y":463.8
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -656,7 +711,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":21,
+ "nextobjectid":28,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

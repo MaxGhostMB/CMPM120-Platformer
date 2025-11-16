@@ -34,6 +34,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.candash = false;
         this.dashrepressed = false;
         this.slamming = false;
+        this.canhold = true;
         
         //Make collision match the sprite
         this.body.setSize(16,8);
@@ -203,7 +204,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 if(this.space.isDown) {
                     this.coyote = 0; //Prevents Coyote time from contributing to jump height
                     this.body.setVelocityY(-225); // jump a bit higher 
-                    this.jumpDelay = 0.1;
+                    this.jumpDelay = 0.05;
                 }
             } else {
                 if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
@@ -213,12 +214,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         this.clingtime = 0;
                         this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
                         this.walljumps -= 1;
+                        this.canhold = true;
                     } else if(this.djump) {
                         this.body.setVelocityY(-275);
                         this.djump = false;
                         this.slamming = false;
                         this.jumpDelay = 0.1;
                         this.clingtime = 0;
+                        this.canhold = false;
 
                         //djump particles
                         this.scene.add.particles(0, 0, 'vapor', {
@@ -242,7 +245,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jumpDelay -= dt;
             }
             //If you dont hold space you dont jump as high
-            if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown) {
+            if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown && this.canhold) {
                 this.body.setVelocityY(this.body.velocity.y * 0.5);
             }
 
@@ -263,6 +266,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.slamming = false;
                 this.djump = true;
                 this.candash = true;
+                this.canhold = true;
                 this.clingtime = 0;
                 this.walljumps = this.maxwalljumps;
             }
