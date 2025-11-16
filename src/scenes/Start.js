@@ -122,12 +122,13 @@ export class Start extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.exit, (player, exit) => {
             if (this.keyCollected) {
                 console.log('Door unlocked!');
+                this.player.enable = false;
                 this.cameras.main.fadeOut(1000, 0, 0, 0);
 
                 // Delay scene transition by 1 second
                 this.time.delayedCall(1000, () => {
                     this.scene.stop("Start");
-                    this.scene.start('Level_one'); // use scene key, not class
+                    this.scene.start('Level_one'); 
                 });
                 
             } else {

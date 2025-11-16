@@ -1,26 +1,27 @@
 import { Player } from '../gameobjects/Player.js';
+import { MovingPlatform } from '../gameobjects/MovingPlatforms.js';
 
-export class Level_one extends Phaser.Scene {
+export class Level_two extends Phaser.Scene {
 
     constructor() {
-        super('Level_one');
+        super('Level_two');
     }
 
     preload() {
         this.load.image('background', 'assets/bg.png');
+        this.load.image('MPlatforms', 'assets/MovingPlatform.png');
         this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
         this.load.spritesheet('vapor', 'assets/vapor_cloud.png', {frameWidth: 128, frameHeight: 128});
-        this.load.spritesheet('confetti', 'assets/confetti_spritesheet_0.png', {frameWidth: 40, frameHeight: 40});
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
-        this.load.tilemapTiledJSON('Level_1_map', 'assets/LevelOne.tmj');
+        this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
     }
 
     create() {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 16;
 
-        this.map = this.make.tilemap({ key: 'Level_1_map', tileWidth: 16, tileHeight: 16 });
+        this.map = this.make.tilemap({ key: 'Level_2_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
 
         // Make all layers
@@ -31,6 +32,8 @@ export class Level_one extends Phaser.Scene {
         this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
         this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
         this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        this.gatelayer = this.map.createLayer("Gate", this.tileset, 0, 0);
+        this.buttonlayer = this.map.createLayer("Button", this.tileset, 0, 0);
         this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
@@ -68,9 +71,23 @@ export class Level_one extends Phaser.Scene {
                     rect.setSize(width, height);
                     rect.setVisible(false);
                     break;
+                case "Button":
+
+                    break;
                 default:
                     console.log("Unknown object: " + name);
             }
+        });
+
+        // moving platforms
+        this.platforms = this.add.group();
+        const platformObjects = this.map.getObjectLayer("Moving Platforms").objects;
+        platformObjects.forEach(obj => {
+            const props = {};
+            obj.properties?.forEach(p => props[p.name] = p.value);
+            const plat = new MovingPlatform(this, obj.x, obj.y - obj.height, 'MPlatforms', props);
+            this.platforms.add(plat);
+            this.physics.add.collider(plat, this.wallayer);
         });
 
         // Create a player
@@ -78,7 +95,16 @@ export class Level_one extends Phaser.Scene {
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
+
         this.keyCollected = false;
+
+
+        // TODO: fix player velocity on platform
+        this.physics.add.collider(this.player, this.platforms, (platform) => {
+            // if (this.player.body.touching.down) {
+            //     this.player. += platform.body.deltaX();
+            // }
+        });
 
         // Camera follows player
         this.cameras.main.startFollow(this.player);
@@ -95,7 +121,7 @@ export class Level_one extends Phaser.Scene {
 
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
-            player.damage();
+            console.log(`Player hit spikes ouchie`);
         });
 
         //Overlaps seem to have a bit of lag when interacting with them
@@ -120,25 +146,26 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.exit, (player, exit) => {
             if (this.keyCollected) {
                 console.log('Door unlocked!');
-                // this.bod.enable = false;
-                this.cameras.main.fadeOut(1000, 0, 0, 0);
+                //this.cameras.main.fadeOut(1000, 0, 0, 0);
 
                 // Delay scene transition by 1 second
                 this.time.delayedCall(1000, () => {
                     console.log("Go to next level or ending or something");
-                    this.scene.stop("Level_one");
-                    this.scene.start('Level_two'); 
                 });
                 
             } else {
                 console.log('The door is locked.');
             }
         });
+
     }
 
     update(time) {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
+
+        this.platforms.children.iterate(p => p.update(dt));
+
         this.player.update(dt);
     }
 }
