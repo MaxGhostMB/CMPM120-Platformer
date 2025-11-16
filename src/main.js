@@ -1,5 +1,6 @@
 import { Start } from './scenes/Start.js';
 import { Level_one } from './scenes/Level_one.js';
+import { Level_two } from './scenes/Level_two.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -13,7 +14,8 @@ const config = {
     physics: {default: "arcade", arcade:{debug:true}},
     scene: [
         Start,
-        Level_one
+        Level_one,
+        Level_two
     ],
     scale: {
         mode: Phaser.Scale.FIT,
