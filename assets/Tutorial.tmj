@@ -298,6 +298,12 @@
                  "height":7.33333333333337,
                  "id":4,
                  "name":"Spikes",
+                 "properties":[
+                        {
+                         "name":"boost",
+                         "type":"bool",
+                         "value":true
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,

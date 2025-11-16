@@ -41,8 +41,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Animation setup
         this.createAnimations(scene);
-
+        
         this.scene = scene;
+
+        this.alive = true;
     }
 
     createAnimations(scene) {
@@ -62,242 +64,282 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         scene.anims.create({
             key: 'dissipate',
-            frames: this.anims.generateFrameNumbers('vapor', { start: 0, end: 24 }),
+            frames: scene.anims.generateFrameNumbers('vapor', { start: 0, end: 24 }),
+            duration: 400
+        });
+
+        scene.anims.create({
+            key:'boom',
+            frames: scene.anims.generateFrameNumbers('confetti', {start: 0, end: 35}),
             duration: 400
         });
     }
 
     update(dt) {
-        //Horizontal movement
-        if(!this.slamming) {
-            //Left movement
-            if (this.left.isDown && !this.right.isDown) {
-                //if holding left against a wall, cling to it
-                if(this.body.blocked.left && this.cur_speed <= 0) {
-                    //Speed is set to -1 because the blocked check doesn't work if it's 0
-                    this.cur_speed = -1;
-                    if(this.body.velocity.y >= 0) {
-                        if(this.clingtime < this.maxclingtime) {
-                            this.body.velocity.y = 0;
+        if(this.alive) {
+            //Horizontal movement
+            if(!this.slamming) {
+                //Left movement
+                if (this.left.isDown && !this.right.isDown) {
+                    //if holding left against a wall, cling to it
+                    if(this.body.blocked.left && this.cur_speed <= 0) {
+                        //Speed is set to -1 because the blocked check doesn't work if it's 0
+                        this.cur_speed = -1;
+                        if(this.body.velocity.y >= 0) {
+                            if(this.clingtime < this.maxclingtime) {
+                                this.body.velocity.y = 0;
+                            }
+                            this.wallclimb = true;
+                            this.wallgrace = 0.15;
+                            if(!this.dashing) this.clingtime += dt;
                         }
-                        this.wallclimb = true;
-                        this.wallgrace = 0.15;
-                        if(!this.dashing) this.clingtime += dt;
+                    //if holding left and you're not against a wall, accelerate
+                    } else {
+                        if(!this.dashing) {
+                            this.cur_speed -= this.acceleration * dt;
+                            //Cap speed
+                            if(this.cur_speed < -this.max_speed) {                    
+                                this.cur_speed = -this.max_speed;
+                            }
+                            this.setFlipX(true);
+                        }
                     }
-                //if holding left and you're not against a wall, accelerate
                 } else {
-                    if(!this.dashing) {
-                        this.cur_speed -= this.acceleration * dt;
-                        //Cap speed
-                        if(this.cur_speed < -this.max_speed) {                    
-                            this.cur_speed = -this.max_speed;
-                        }
-                        this.setFlipX(true);
+                    if(this.cur_speed < 0 && !this.dashing) {
+                        //if you're moving left but not holding left and hit a wall, lose all momentum
+                        if(this.body.blocked.left) {
+                            this.cur_speed = 0;
+                        //if you're moving left but not holding left and on the ground, decelerate
+                        } else if(this.grounded) {
+                            this.cur_speed += this.drag * dt;
+                            //prevents deceleration from making the player go right
+                            if(Math.abs(this.cur_speed) < 10) {
+                                this.cur_speed = 0;
+                            }
+                        }  
                     }
                 }
-            } else {
-                if(this.cur_speed < 0 && !this.dashing) {
-                    //if you're moving left but not holding left and hit a wall, lose all momentum
-                    if(this.body.blocked.left) {
-                        this.cur_speed = 0;
-                    //if you're moving left but not holding left and on the ground, decelerate
-                    } else if(this.grounded) {
-                        this.cur_speed += this.drag * dt;
-                        //prevents deceleration from making the player go right
-                        if(Math.abs(this.cur_speed) < 10) {
-                            this.cur_speed = 0;
+                
+                //Right movement
+                if (this.right.isDown && !this.left.isDown) {
+                    //if holding right against a wall, cling to it
+                    if(this.body.blocked.right && this.cur_speed >= 0) {
+                        //Speed is set to 1 because the blocked check doesn't work if it's 0
+                        this.cur_speed = 1;
+                        if(this.body.velocity.y > 0) {
+                            if(this.clingtime < this.maxclingtime) {
+                                this.body.velocity.y = 0;
+                            }
+                            this.wallclimb = true;
+                            this.wallgrace = 0.15;
+                            this.clingtime += dt;
                         }
-                    }  
+                    //if holding right and youre not against a wall, accelerate
+                    } else {
+                        if(!this.dashing) {
+                            this.cur_speed += this.acceleration * dt;
+                            //Cap speed
+                            if(this.cur_speed > this.max_speed) {
+                                this.cur_speed = this.max_speed;
+                            }
+                            this.setFlipX(false);
+                        }
+                    }
+                } else {
+                    if(this.cur_speed > 0 && !this.dashing) {
+                        //if you are moving right but not holding right and hit a wall, lose all horizontal momentum
+                        if(this.body.blocked.right) {
+                            this.cur_speed = 0;
+                        //if you are on the ground, moving right but not holding right, decelerate
+                        } else if (this.grounded) {
+                            this.cur_speed -= this.drag * dt;
+                            //prevents deceleration from making the player go left
+                            if(Math.abs(this.cur_speed) < 10) {
+                                this.cur_speed = 0;
+                            }
+                        }
+                    }
                 }
             }
-            
-            //Right movement
-            if (this.right.isDown && !this.left.isDown) {
-                //if holding right against a wall, cling to it
-                if(this.body.blocked.right && this.cur_speed >= 0) {
-                    //Speed is set to 1 because the blocked check doesn't work if it's 0
-                    this.cur_speed = 1;
-                    if(this.body.velocity.y > 0) {
-                        if(this.clingtime < this.maxclingtime) {
+
+            //Slamming keybind
+            if(!this.grounded && this.ctrl.isDown) {
+                this.slamming = true;
+            }
+
+            //Prevents holding shift to dash constantly while grounded, not using for the base dash check because it makes 
+            //inputting it feel weird
+            if(Phaser.Input.Keyboard.JustDown(this.shift) || Phaser.Input.Keyboard.JustDown(this.left) || Phaser.Input.Keyboard.JustDown(this.right)) {
+                if(!this.dashing) this.dashrepressed = true;
+            }
+
+            //Dashing
+            if(this.dashrepressed && !this.dashing) {
+                if(this.shift.isDown) {
+                    if(this.left.isDown ^ this.right.isDown) {
+                        if(this.candash) {
+                            this.candash = false;
+                            this.dashing = true;
+                            this.dashrepressed = false;
+
+                            this.slamming = false;
                             this.body.velocity.y = 0;
-                        }
-                        this.wallclimb = true;
-                        this.wallgrace = 0.15;
-                        this.clingtime += dt;
-                    }
-                //if holding right and youre not against a wall, accelerate
-                } else {
-                    if(!this.dashing) {
-                        this.cur_speed += this.acceleration * dt;
-                        //Cap speed
-                        if(this.cur_speed > this.max_speed) {
-                            this.cur_speed = this.max_speed;
-                        }
-                        this.setFlipX(false);
-                    }
-                }
-            } else {
-                if(this.cur_speed > 0 && !this.dashing) {
-                    //if you are moving right but not holding right and hit a wall, lose all horizontal momentum
-                    if(this.body.blocked.right) {
-                        this.cur_speed = 0;
-                    //if you are on the ground, moving right but not holding right, decelerate
-                    } else if (this.grounded) {
-                        this.cur_speed -= this.drag * dt;
-                        //prevents deceleration from making the player go left
-                        if(Math.abs(this.cur_speed) < 10) {
-                            this.cur_speed = 0;
+                            this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
+                            let dir = (this.right.isDown - this.left.isDown);
+                            setTimeout(() => {
+                                this.cur_speed = 100 * dir + 100 * (this.right.isDown - this.left.isDown);
+                                this.dashing = false;
+                            },125);
+                        } else {
+                            this.tint = "0xFF9999";
+                            setTimeout(() => {this.tint = "0xFFFFFF"}, 150);
                         }
                     }
                 }
             }
-        }
 
-        //Slamming keybind
-        if(!this.grounded && this.ctrl.isDown) {
-            this.slamming = true;
-        }
-
-        //Prevents holding shift to dash constantly while grounded, not using for the base dash check because it makes 
-        //inputting it feel weird
-        if(Phaser.Input.Keyboard.JustDown(this.shift) || Phaser.Input.Keyboard.JustDown(this.left) || Phaser.Input.Keyboard.JustDown(this.right)) {
-            if(!this.dashing) this.dashrepressed = true;
-        }
-
-        //Dashing
-        if(this.dashrepressed && !this.dashing) {
-            if(this.shift.isDown) {
-                if(this.left.isDown ^ this.right.isDown) {
-                    if(this.candash) {
-                        this.candash = false;
-                        this.dashing = true;
-                        this.dashrepressed = false;
-
+            // Jumping
+            if(this.grounded) {
+                if(this.space.isDown) {
+                    this.coyote = 0; //Prevents Coyote time from contributing to jump height
+                    this.body.setVelocityY(-225); // jump a bit higher 
+                    this.jumpDelay = 0.1;
+                }
+            } else {
+                if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
+                    if(this.wallclimb && (this.left.isDown ^ this.right.isDown) && this.walljumps > 0) {
+                        //walljumps dont work sometimes, need to test more
+                        this.body.setVelocityY(-250);
+                        this.clingtime = 0;
+                        this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
+                        this.walljumps -= 1;
+                    } else if(this.djump) {
+                        this.body.setVelocityY(-275);
+                        this.djump = false;
                         this.slamming = false;
-                        this.body.velocity.y = 0;
-                        this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
-                        let dir = (this.right.isDown - this.left.isDown);
-                        setTimeout(() => {
-                            this.cur_speed = 100 * dir + 100 * (this.right.isDown - this.left.isDown);
-                            this.dashing = false;
-                        },125);
+                        this.jumpDelay = 0.1;
+                        this.clingtime = 0;
+
+                        //djump particles
+                        this.scene.add.particles(0, 0, 'vapor', {
+                            anim: ['dissipate'],
+                            angle: { min: 0, max: 360 },
+                            x: this.x - 3 + Math.random() * 6 + this.cur_speed/20,
+                            y: this.y + this.body.velocity.y/50,
+                            speed: 15,
+                            frequency: 10,
+                            duration: 125,
+                            scale: 0.1,
+                            color: [0xDDDDDD, 0x999999]
+                        });
                     } else {
                         this.tint = "0xFF9999";
-                        setTimeout(() => {this.tint = "0xFFFFFF"}, 150);
+                        setTimeout(() => {this.tint = "0xFFFFFF"}, 150)
                     }
                 }
             }
-        }
-
-        // Jumping
-        if(this.grounded) {
-            if(this.space.isDown) {
-                this.coyote = 0; //Prevents Coyote time from contributing to jump height
-                this.body.setVelocityY(-225); // jump a bit higher 
-                this.jumpDelay = 0.1;
+            if(this.jumpDelay > 0) {
+                this.jumpDelay -= dt;
             }
-        } else {
-            if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
-                if(this.wallclimb && (this.left.isDown ^ this.right.isDown) && this.walljumps > 0) {
-                    //walljumps dont work sometimes, need to test more
-                    this.body.setVelocityY(-250);
-                    this.clingtime = 0;
-                    this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
-                    this.walljumps -= 1;
-                } else if(this.djump) {
-                    this.body.setVelocityY(-275);
-                    this.djump = false;
-                    this.slamming = false;
-                    this.jumpDelay = 0.1;
-                    this.clingtime = 0;
+            //If you dont hold space you dont jump as high
+            if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown) {
+                this.body.setVelocityY(this.body.velocity.y * 0.5);
+            }
 
-                    //djump particles
-                    this.scene.add.particles(0, 0, 'vapor', {
-                        anim: ['dissipate'],
-                        angle: { min: 0, max: 360 },
-                        x: this.x - 3 + Math.random() * 6 + this.cur_speed/20,
-                        y: this.y + this.body.velocity.y/50,
-                        speed: 15,
-                        frequency: 10,
-                        duration: 125,
-                        scale: 0.1,
-                        color: [0xDDDDDD, 0x999999]
-                    });
-                } else {
-                    this.tint = "0xFF9999";
-                    setTimeout(() => {this.tint = "0xFFFFFF"}, 150)
-                }
+            //wallgrace allows the player to jump off the wall and go the other direction easier;
+            if(this.wallgrace > 0) {
+                this.wallgrace -= dt;
+            } else {
+                this.wallclimb = false;
+            }
+
+            // Coyote time and grounded logic
+            if (!this.body.blocked.down) {
+                this.coyote -= dt;
+                if (this.coyote < 0) this.grounded = false;
+            } else {
+                this.coyote = 0.1;
+                this.grounded = true;
+                this.slamming = false;
+                this.djump = true;
+                this.candash = true;
+                this.clingtime = 0;
+                this.walljumps = this.maxwalljumps;
+            }
+
+            //Slamming physics
+            if(this.slamming) {
+                this.cur_speed = 0;
+                this.body.setVelocityY(400);            
+            }
+
+            // Gravity adjustments
+            if (this.grounded || this.dashing || this.slamming) {
+                //If gravity is set to 0 coyote time becomes inconsistent, which also leads to inconsistent jump heights
+                this.body.setGravityY(1);
+            } else if (this.body.velocity.y < 0) {
+                this.body.setGravityY(800);
+            } else if(this.wallclimb) {
+                this.body.setGravityY(300);
+            } else {
+                this.body.setGravityY(1000);
+            }
+
+            this.body.setVelocityX(this.cur_speed);
+            // Animation
+            if (this.cur_speed != 0) {
+                this.anims.play('moving', true);
+            } else {
+                this.anims.play('idle', true);
+            }
+
+            //Particles
+            if(this.dashing) {
+                this.scene.add.particles(0, 0, 'vapor', {
+                    anim: ['dissipate'],
+                    //angle: { min: 0, max: 360 },
+                    x: this.x,
+                    y: this.y - 3 + Math.random() * 6,
+                    speed: this.cur_speed/15,
+                    frequency: 25,
+                    duration: 125,
+                    scale: 0.1,
+                    color: [0xDDDDDD, 0x999999]
+                });
             }
         }
-        if(this.jumpDelay > 0) {
-            this.jumpDelay -= dt;
-        }
-        //If you dont hold space you dont jump as high
-        if (!this.grounded && this.body.velocity.y < 0 && !this.space.isDown) {
-            this.body.setVelocityY(this.body.velocity.y * 0.5);
-        }
+    }
 
-        //wallgrace allows the player to jump off the wall and go the other direction easier;
-        if(this.wallgrace > 0) {
-            this.wallgrace -= dt;
-        } else {
-            this.wallclimb = false;
-        }
+    damage() {
+        if(!this.alive) return;
+        this.alive = false;
+        this.cur_speed = 0;
+        this.alpha = 0;
+        this.body.setGravityY(0);
+        this.body.setVelocityX(0);
+        this.body.setVelocityY(0);
+        this.coyote = 0;
 
-        // Coyote time and grounded logic
-        if (!this.body.blocked.down) {
-            this.coyote -= dt;
-            if (this.coyote < 0) this.grounded = false;
-        } else {
-            this.coyote = 0.1;
-            this.grounded = true;
-            this.slamming = false;
-            this.djump = true;
-            this.candash = true;
-            this.clingtime = 0;
-            this.walljumps = this.maxwalljumps;
-        }
+        this.scene.add.particles(0, 0, 'confetti', {
+                    anim: ['boom'],
+                    angle: { min: 0, max: 360 },
+                    x: this.x - 2 + Math.random() * 4,
+                    y: this.y - 2 + Math.random() * 4,
+                    speed: 15 + 20 * Math.random(),
+                    gravity:15,
+                    //frequency: 1,
+                    duration: 125,
+                    scale: 0.1,
+                    alpha: [1,0],
+                    color: [0xDDDDDD, 0x999999]
+                });
 
-        //Slamming physics
-        if(this.slamming) {
-            this.cur_speed = 0;
-            this.body.setVelocityY(400);            
-        }
-
-        // Gravity adjustments
-        if (this.grounded || this.dashing || this.slamming) {
-            //If gravity is set to 0 coyote time becomes inconsistent, which also leads to inconsistent jump heights
-            this.body.setGravityY(1);
-        } else if (this.body.velocity.y < 0) {
-            this.body.setGravityY(800);
-        } else if(this.wallclimb) {
-            this.body.setGravityY(300);
-        } else {
-            this.body.setGravityY(1000);
-        }
-
-        this.body.setVelocityX(this.cur_speed);
-        // Animation
-        if (this.cur_speed != 0) {
-            this.anims.play('moving', true);
-        } else {
-            this.anims.play('idle', true);
-        }
-
-        //Particles
-        if(this.dashing) {
-             this.scene.add.particles(0, 0, 'vapor', {
-                anim: ['dissipate'],
-                //angle: { min: 0, max: 360 },
-                x: this.x,
-                y: this.y - 3 + Math.random() * 6,
-                speed: this.cur_speed/15,
-                frequency: 25,
-                duration: 125,
-                scale: 0.1,
-                color: [0xDDDDDD, 0x999999]
-            });
-        }   
+        setTimeout(() => {
+            this.alive = true;
+            this.x = this.scene.spawnpoint[0];
+            this.y = this.scene.spawnpoint[1] - 5;
+            this.alpha = 1;
+        }, 1000);
     }
 }
 
@@ -310,3 +352,4 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         //    this.body.setVelocityX(200);
         //    this.setFlipX(false);
         //}
+

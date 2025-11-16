@@ -11,6 +11,7 @@ export class Start extends Phaser.Scene {
         this.load.image('background', 'assets/bg.png');
         this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
         this.load.spritesheet('vapor', 'assets/vapor_cloud.png', {frameWidth: 128, frameHeight: 128});
+        this.load.spritesheet('confetti', 'assets/confetti_spritesheet_0.png', {frameWidth: 40, frameHeight: 40});
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('tutorial_map', 'assets/Tutorial.tmj');
@@ -76,6 +77,7 @@ export class Start extends Phaser.Scene {
         // Create a player
         this.player = new Player(this, this.spawnpoint[0], this.spawnpoint[1], 'player', 1);
         this.player.setDepth(2);
+        this.player.spawnpoint = this.spawnpoint;
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
         this.keyCollected = false;
@@ -95,7 +97,7 @@ export class Start extends Phaser.Scene {
 
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
-            console.log(`Player hit spikes ouchie`);
+            player.damage();
         });
 
         //Overlaps seem to have a bit of lag when interacting with them
