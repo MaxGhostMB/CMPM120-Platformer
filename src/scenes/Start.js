@@ -19,7 +19,7 @@ export class Start extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 16;
+        this.physics.world.TILE_BIAS = 32;
 
         this.map = this.make.tilemap({ key: 'tutorial_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -122,14 +122,13 @@ export class Start extends Phaser.Scene {
 
             if(type === "Key") {
                 this.keyCollected = true;  
-            } else {
-                pickup.destroy();
             }
 
+            //this works weirdly if there are multiple items in a level, but is fine for this
             this.itemlayer.setVisible(false);
 
-            const tileX = this.map.worldToTileX(pickup.x);
-            const tileY = this.map.worldToTileY(pickup.y);
+            //const tileX = this.map.worldToTileX(pickup.x);
+            //const tileY = this.map.worldToTileY(pickup.y);
             //this creates a small lagspike for some reason
             //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
