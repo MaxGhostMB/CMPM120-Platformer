@@ -170,14 +170,16 @@ export class Level_two extends Phaser.Scene {
         // door unlock
         this.physics.add.overlap(this.player, this.exit, (player, exit) => {
             if (this.keyCollected) {
-                console.log('Door unlocked!');
-                //this.cameras.main.fadeOut(1000, 0, 0, 0);
+                if (!exit.opened) {
+                    exit.opened = true;
+                    console.log('Door unlocked!');
+                    //this.cameras.main.fadeOut(1000, 0, 0, 0);
 
-                // Delay scene transition by 1 second
-                this.time.delayedCall(1000, () => {
-                    console.log("Go to next level or ending or something");
-                });
-                
+                    // Delay scene transition by 1 second
+                    this.time.delayedCall(1000, () => {
+                        console.log("Go to next level or ending or something");
+                    });
+                }
             } else {
                 console.log('The door is locked.');
             }
