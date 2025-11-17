@@ -661,7 +661,7 @@
                  "y":255.8
                 }, 
                 {
-                 "height":6.75,
+                 "height":9.5,
                  "id":30,
                  "name":"Platform",
                  "rotation":0,
@@ -691,7 +691,7 @@
                  "visible":true,
                  "width":48.25,
                  "x":63.625,
-                 "y":224.8
+                 "y":223.8
                 }],
          "opacity":1,
          "type":"objectgroup",

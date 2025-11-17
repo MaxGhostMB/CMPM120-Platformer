@@ -21,7 +21,7 @@ export class Level_two extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 16;
+        this.physics.world.TILE_BIAS = 32;
 
         this.map = this.make.tilemap({ key: 'Level_2_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');

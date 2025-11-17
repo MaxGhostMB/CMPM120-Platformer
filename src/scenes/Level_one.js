@@ -18,7 +18,7 @@ export class Level_one extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 16;
+        this.physics.world.TILE_BIAS = 32;
 
         this.map = this.make.tilemap({ key: 'Level_1_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -103,6 +103,8 @@ export class Level_one extends Phaser.Scene {
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
+            this.keyCollected = false;
+            this.itemlayer.setVisible(true);
         });
 
         //Platforms
@@ -116,14 +118,15 @@ export class Level_one extends Phaser.Scene {
 
             if(type === "Key") {
                 this.keyCollected = true;
-                console.log(`Key Collected`);
             }
-            pickup.destroy();
 
-            const tileX = this.map.worldToTileX(pickup.x);
-            const tileY = this.map.worldToTileY(pickup.y);
+            //this works weirdly if there are multiple items in a level, but is fine for this
+            this.itemlayer.setVisible(false);
+
+            //const tileX = this.map.worldToTileX(pickup.x);
+            //const tileY = this.map.worldToTileY(pickup.y);
             //this creates a small lagspike for some reason
-            this.map.removeTileAt(tileX, tileY, false, false, 'Items');
+            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
         // door unlock
@@ -135,7 +138,6 @@ export class Level_one extends Phaser.Scene {
 
                 // Delay scene transition by 1 second
                 this.time.delayedCall(1000, () => {
-                    console.log("Go to next level or ending or something");
                     this.scene.stop("Level_one");
                     this.scene.start('Level_two'); 
                 });

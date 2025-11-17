@@ -37,8 +37,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.canhold = true;
         
         //Make collision match the sprite
-        this.body.setSize(16,8);
-        this.body.setOffset(0,7);
+        this.body.setSize(14,8);
+        this.body.setOffset(1,7);
 
         // Animation setup
         this.createAnimations(scene);
