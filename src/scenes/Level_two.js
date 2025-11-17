@@ -16,6 +16,7 @@ export class Level_two extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
+        this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/doorClose_1.ogg');
     }
 
     create() {
@@ -24,6 +25,8 @@ export class Level_two extends Phaser.Scene {
 
         this.map = this.make.tilemap({ key: 'Level_2_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
+
+        this.unlockSound = this.sound.add('unlock_gate');
 
         // Make all layers
         this.bglayer = this.map.createLayer("Background", this.tileset, 0, 0);
@@ -82,7 +85,7 @@ export class Level_two extends Phaser.Scene {
                     rect.setVisible(false);
                     break;
                 case "Button":
-                    const butt = this.spikes.create(x + (width * 0.5), y + (height * 0.5), null);
+                    const butt = this.buttons.create(x + (width * 0.5), y + (height * 0.5), null);
                     butt.setOrigin(0.5);
                     butt.setSize(width, height);
                     butt.setVisible(false);
@@ -110,6 +113,7 @@ export class Level_two extends Phaser.Scene {
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
+        this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
 
         this.keyCollected = false;
 
@@ -180,7 +184,14 @@ export class Level_two extends Phaser.Scene {
         });
 
         // button press
-
+        this.physics.add.overlap(this.player, this.buttons, (player, button) => {
+            if (!button.pressed) {
+                button.pressed = true;
+                this.unlockSound.play();
+            }
+            this.gatelayer.setVisible(false);
+            this.physics.world.removeCollider(this.gateCollider);
+        });
     }
 
     update(time) {

@@ -15,9 +15,9 @@ const config = {
         //arcade:{debug:true}
     },
     scene: [
-        Level_two,
         Start,
-        Level_one
+        Level_one,
+        Level_two,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
