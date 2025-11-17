@@ -12,6 +12,7 @@ export class Level_two extends Phaser.Scene {
         this.load.image('MPlatforms', 'assets/MovingPlatform.png');
         this.load.spritesheet('player', 'assets/froggy-green.png', {frameWidth: 16, frameHeight: 17});
         this.load.spritesheet('vapor', 'assets/vapor_cloud.png', {frameWidth: 128, frameHeight: 128});
+        this.load.spritesheet('confetti', 'assets/confetti_spritesheet_0.png', {frameWidth: 40, frameHeight: 40});
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
@@ -39,12 +40,14 @@ export class Level_two extends Phaser.Scene {
         // Collision
         //this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
+        this.gatelayer.setCollisionBetween(1,1767);
         //this.doorlayer.setCollision(58);
 
         this.exit = this.physics.add.staticGroup();
         this.pickups = this.physics.add.staticGroup();
         this.platforms = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
+        this.buttons = this.physics.add.staticGroup();
 
         this.spawnpoint = [0,0];
 
@@ -79,7 +82,10 @@ export class Level_two extends Phaser.Scene {
                     rect.setVisible(false);
                     break;
                 case "Button":
-
+                    const butt = this.spikes.create(x + (width * 0.5), y + (height * 0.5), null);
+                    butt.setOrigin(0.5);
+                    butt.setSize(width, height);
+                    butt.setVisible(false);
                     break;
                 default:
                     console.log("Unknown object: " + name);
@@ -94,7 +100,9 @@ export class Level_two extends Phaser.Scene {
             obj.properties?.forEach(p => props[p.name] = p.value);
             const plat = new MovingPlatform(this, obj.x, obj.y - obj.height, 'MPlatforms', props);
             this.mplatforms.add(plat);
-            this.physics.add.collider(plat, this.wallayer);
+            this.physics.add.collider(plat, this.wallayer, (platform, wall) => {
+                platform.reverseDirection = true; 
+            }, null, this);
         });
 
         // Create a player
@@ -107,11 +115,11 @@ export class Level_two extends Phaser.Scene {
 
 
         // TODO: fix player velocity on platform
-        this.physics.add.collider(this.player, this.platforms, (platform) => {
-            // if (this.player.body.touching.down) {
-            //     this.player. += platform.body.deltaX();
-            // }
-        });
+        this.physics.add.collider(this.player, this.mplatforms, (player, mplatform) => {
+            if (player.body.touching.down && mplatform.body.touching.up) {
+                player.onPlatform = mplatform;
+            }
+            }, null, this);
 
         // Camera follows player
         this.cameras.main.startFollow(this.player);
@@ -171,14 +179,24 @@ export class Level_two extends Phaser.Scene {
             }
         });
 
+        // button press
+
     }
 
     update(time) {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
 
-        this.platforms.children.iterate(p => p.update(dt));
+        this.mplatforms.children.iterate(p => p.update(dt));
 
+        if (this.player.onPlatform) {
+            const plat = this.player.onPlatform;
+            this.player.setVelocityX(plat.vx);// = plat.vx;
+            this.player.setVelocityY(plat.vy);;
+        }
+        if (!this.player.body.blocked.down && !this.player.body.touching.down) {
+            this.player.onPlatform = null;
+        }
         this.player.update(dt);
     }
 }
