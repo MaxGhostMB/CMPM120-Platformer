@@ -16,7 +16,7 @@ export class Level_two extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
-        this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/doorClose_1.ogg');
+        this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/metalLatch.ogg');
     }
 
     create() {
@@ -116,6 +116,8 @@ export class Level_two extends Phaser.Scene {
         this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
 
         this.keyCollected = false;
+        this.gateOpened = false;
+        this.canPlayUnlockSound = true;
 
 
         // TODO: fix player velocity on platform
@@ -187,9 +189,9 @@ export class Level_two extends Phaser.Scene {
 
         // button press
         this.physics.add.overlap(this.player, this.buttons, (player, button) => {
-            if (!button.pressed) {
-                button.pressed = true;
-                this.unlockSound.play();
+            if (!this.gateOpened) {
+                this.gateOpened = true
+                this.unlockSound.play({ volume: 0.8 });
             }
             this.gatelayer.setVisible(false);
             this.physics.world.removeCollider(this.gateCollider);
@@ -205,7 +207,7 @@ export class Level_two extends Phaser.Scene {
         if (this.player.onPlatform) {
             const plat = this.player.onPlatform;
             this.player.setVelocityX(plat.vx);// = plat.vx;
-            this.player.setVelocityY(plat.vy);;
+            //this.player.setVelocityY(plat.vy);;
         }
         if (!this.player.body.blocked.down && !this.player.body.touching.down) {
             this.player.onPlatform = null;
