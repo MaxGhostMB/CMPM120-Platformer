@@ -17,6 +17,7 @@ export class Level_two extends Phaser.Scene {
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
         this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/metalLatch.ogg');
+        this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
     }
 
     create() {
@@ -144,6 +145,10 @@ export class Level_two extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             this.player.damage();
             this.keyCollected = false;
+            this.pickups.children.iterate(pickup => {
+                if (!pickup) return;
+                pickup.body.enable = true;
+            });
             this.itemlayer.setVisible(true);
         });
 
@@ -161,6 +166,7 @@ export class Level_two extends Phaser.Scene {
             };
 
             //this works weirdly if there are multiple items in a level, but is fine for this
+            pickup.body.enable = false;
             this.itemlayer.setVisible(false);
 
             //const tileX = this.map.worldToTileX(pickup.x);

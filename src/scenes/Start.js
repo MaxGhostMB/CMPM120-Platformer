@@ -15,6 +15,7 @@ export class Start extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('tutorial_map', 'assets/Tutorial.tmj');
+        this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
     }
 
     create() {

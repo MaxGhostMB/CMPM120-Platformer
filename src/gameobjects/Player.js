@@ -338,6 +338,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     color: [0xDDDDDD, 0x999999]
                 });
 
+        this.deathSound = this.scene.sound.add('dead_s');
+        this.deathSound.play({ volume: 0.3 });
+
         setTimeout(() => {
             this.alive = true;
             this.x = this.scene.spawnpoint[0];

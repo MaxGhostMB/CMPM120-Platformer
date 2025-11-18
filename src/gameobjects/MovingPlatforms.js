@@ -52,10 +52,12 @@ export class MovingPlatform extends Phaser.Physics.Arcade.Sprite {
         }
         // Move vertically incase we want this 
         else if (this.direction === "vertical") {
-            this.y += this.currentSpeed * dt;
+            this.body.setVelocityX(this.currentSpeed);
 
-            if (this.y > this.startY + this.distance || this.y < this.startY - this.distance) {
-                this.currentSpeed *= -1;
+            if (this.y > this.startY + this.distance) {
+                this.currentSpeed = -Math.abs(this.speed);
+            } else if (this.y < this.startY - this.distance) {
+                this.currentSpeed = Math.abs(this.speed);
             }
         }
     }
