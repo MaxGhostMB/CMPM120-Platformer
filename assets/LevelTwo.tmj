@@ -522,17 +522,6 @@
                  "y":289.882621299244
                 }, 
                 {
-                 "height":63.7017123487815,
-                 "id":10,
-                 "name":"Gate",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":19.2858395184384,
-                 "x":203.363477974526,
-                 "y":240.048451811862
-                }, 
-                {
                  "height":13.1736526946108,
                  "id":20,
                  "name":"Button",
@@ -597,6 +586,17 @@
                  "width":48.25,
                  "x":288.125,
                  "y":463.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":28,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":39.9921181466954,
+                 "x":351.865101544135,
+                 "y":208.175460104911
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -751,7 +751,7 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":28,
+ "nextobjectid":29,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
