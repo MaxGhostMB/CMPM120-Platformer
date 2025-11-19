@@ -15,6 +15,8 @@ export class Level_one extends Phaser.Scene {
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_1_map', 'assets/LevelOne.tmj');
         this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
+        this.load.audio('lvl_win', 'assets/vsgame_0/round_end.wav');
+        this.load.audio('Key_sound', 'assets/kenney_rpg-audio/Audio/handleCoins.ogg');
     }
 
     create() {
@@ -23,6 +25,9 @@ export class Level_one extends Phaser.Scene {
 
         this.map = this.make.tilemap({ key: 'Level_1_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
+
+        this.KeySound = this.sound.add('Key_sound');
+        this.lvl_OverSound = this.sound.add('lvl_win');
 
         // Make all layers
         this.bglayer = this.map.createLayer("Background", this.tileset, 0, 0);
@@ -105,6 +110,9 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
             this.keyCollected = false;
+            if (this.keyCollected) {
+                this.KeySound.play({volume: 0.8});
+            }
             // makes all pickups pick-up-able again
             this.pickups.children.iterate(pickup => {
                 if (!pickup) return;
@@ -124,6 +132,7 @@ export class Level_one extends Phaser.Scene {
 
             if(type === "Key") {
                 this.keyCollected = true;
+                this.KeySound.play({volume: 0.8});
             }
 
             // avoiding picking up multiple times
@@ -136,7 +145,8 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.exit, (player, exit) => {
             if (this.keyCollected) {
                 console.log('Door unlocked!');
-                // this.bod.enable = false;
+                this.lvl_OverSound.play({volume: 0.8});
+                player.body.enable = false;
                 this.cameras.main.fadeOut(1000, 0, 0, 0);
 
                 // Delay scene transition by 1 second

@@ -18,6 +18,8 @@ export class Level_two extends Phaser.Scene {
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
         this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/metalLatch.ogg');
         this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
+        this.load.audio('lvl_win', 'assets/vsgame_0/round_end.wav');
+        this.load.audio('Key_sound', 'assets/kenney_rpg-audio/Audio/handleCoins.ogg');
     }
 
     create() {
@@ -28,6 +30,8 @@ export class Level_two extends Phaser.Scene {
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
 
         this.unlockSound = this.sound.add('unlock_gate');
+        this.KeySound = this.sound.add('Key_sound');
+        this.lvl_OverSound = this.sound.add('lvl_win');
 
         // Make all layers
         this.bglayer = this.map.createLayer("Background", this.tileset, 0, 0);
@@ -145,6 +149,9 @@ export class Level_two extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             this.player.damage();
             this.keyCollected = false;
+            if (this.keyCollected) {
+                this.KeySound.play({volume: 0.8});
+            }
             this.pickups.children.iterate(pickup => {
                 if (!pickup) return;
                 pickup.body.enable = true;
@@ -162,6 +169,7 @@ export class Level_two extends Phaser.Scene {
             const type = pickup.getData('type');
 
             if(type === "Key") {
+                this.KeySound.play({volume: 0.8});
                 this.keyCollected = true;
             };
 
@@ -180,8 +188,10 @@ export class Level_two extends Phaser.Scene {
             if (this.keyCollected) {
                 if (!exit.opened) {
                     exit.opened = true;
+                    this.lvl_OverSound.play({volume: 0.8});
+                    player.body.enable = false;
                     console.log('Door unlocked!');
-                    //this.cameras.main.fadeOut(1000, 0, 0, 0);
+                    this.cameras.main.fadeOut(1000, 0, 0, 0);
 
                     // Delay scene transition by 1 second
                     this.time.delayedCall(1000, () => {
