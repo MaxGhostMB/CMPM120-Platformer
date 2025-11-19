@@ -29,7 +29,7 @@ export class Level_two extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 32;
+        this.physics.world.TILE_BIAS = 58;
 
         this.sound.play('music3', {
             loop:true,
@@ -197,6 +197,15 @@ export class Level_two extends Phaser.Scene {
                 if (!pickup) return;
                 pickup.body.enable = true;
             });
+
+            this.buttons.children.iterate(butt => {
+                if (!butt) return;
+                butt.body.enable = true;
+                const tileX = this.map.worldToTileX(butt.x);
+                const tileY = this.map.worldToTileY(butt.y);
+                this.buttonlayer.putTileAt(9, tileX, tileY);
+            });
+
             this.itemlayer.setVisible(true);
 
             this.gateOpened = false;
@@ -223,11 +232,6 @@ export class Level_two extends Phaser.Scene {
 
             //this works weirdly if there are multiple items in a level, but is fine for this
             pickup.body.enable = false;
-
-            //const tileX = this.map.worldToTileX(pickup.x);
-            //const tileY = this.map.worldToTileY(pickup.y);
-            //this creates a small lagspike for some reason
-            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
         // door unlock
@@ -261,6 +265,9 @@ export class Level_two extends Phaser.Scene {
             }
             this.gatelayer.setVisible(false);
             this.gateCollider.overlapOnly = true;
+            const tileX = this.map.worldToTileX(button.x);
+            const tileY = this.map.worldToTileY(button.y);
+            this.buttonlayer.putTileAt(69, tileX, tileY);
         });
 
         this.physics.add.overlap(this.player, this.sexit, (player, sexi) => {

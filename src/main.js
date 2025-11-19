@@ -14,7 +14,7 @@ const config = {
     backgroundColor: '#000000',
     pixelArt: false,
     physics: {default: "arcade", 
-      // arcade:{debug:true}
+        arcade:{debug:true}
     },
     scene: [
         // Start,

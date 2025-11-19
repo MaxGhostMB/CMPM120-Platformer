@@ -27,7 +27,7 @@ export class Start extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 32;
+        this.physics.world.TILE_BIAS = 48;
 
         this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
         this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);

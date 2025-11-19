@@ -881,17 +881,6 @@
                  "width":9,
                  "x":235.957833333333,
                  "y":433.124983333333
-                }, 
-                {
-                 "height":14.4242,
-                 "id":53,
-                 "name":"Spawn",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":13.7576,
-                 "x":639.1212,
-                 "y":283.121233333333
                 }],
          "opacity":1,
          "type":"objectgroup",
