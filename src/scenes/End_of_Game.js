@@ -45,82 +45,6 @@ export class End extends Phaser.Scene {
 
         // Make all layers
         this.bglayer = this.map.createLayer("Background", this.tileset, 0, 0);
-        this.wallayer = this.map.createLayer("Walls", this.tileset, 0, 0);
-        this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
-        if (this.registry.get("Diamond_collected")) {
-            this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
-        }
-        this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
-        this.objlayer = this.map.getObjectLayer("Objects");
-        
-        // Collision
-        //this.platlayer.setCollisionBetween(1,1767);
-        this.wallayer.setCollisionBetween(1,1767);
-        //this.doorlayer.setCollision(58);
-
-        this.exit = this.physics.add.staticGroup();
-        this.platforms = this.physics.add.staticGroup();
-
-        this.spawnpoint = [0,0];
-
-        this.objlayer.objects.forEach(objData => {
-            const {x = 0, y = 0, name, width = 0, height = 0} = objData;
-            switch(name) {
-                case "Exit":
-                    const exi = this.exit.create(x + (width * 0.5), y + (height * 0.5), null);
-                    exi.setOrigin(0.5);
-                    exi.setSize(width, height);
-                    exi.setVisible(false);
-                    break;
-                case "Platform":
-                    const plat = this.platforms.create(x + (width * 0.5), y + (height * 0.5), null);
-                    plat.setOrigin(0.5);
-                    plat.setSize(width, height);
-                    plat.setVisible(false);
-                    break;
-                case "Spawn":
-                    this.spawnpoint = [x + 8,y + 8];
-                    break;
-                default:
-                    console.log("Unknown object: " + name);
-            }
-        });
-
-        // Create a player
-        this.player = new Player(this, this.spawnpoint[0], this.spawnpoint[1], 'player', 1);
-        this.player.setDepth(2);
-        this.player.spawnpoint = this.spawnpoint;
-        this.physics.add.collider(this.wallayer, this.player);
-
-        // Camera follows player
-        this.cameras.main.startFollow(this.player);
-        this.cameras.main.setLerp(0.15, 0.15);
-        this.cameras.main.setRoundPixels(true);
-
-        // Set camera bounds to map size
-        this.cameras.main.setBounds(
-            0,
-            0,
-            this.map.widthInPixels,
-            this.map.heightInPixels
-        );
-
-        //Platforms
-        this.physics.add.collider(this.player,this.platforms);
-
-        // door unlock
-        this.physics.add.overlap(this.player, this.exit, (player, exit) => {
-                this.sound.stopAll();
-                this.lvl_OverSound.play({volume: 0.45});
-                player.body.enable = false;
-                this.cameras.main.fadeOut(1000, 0, 0, 0);
-
-                // Delay scene transition by 1 second
-                this.time.delayedCall(1000, () => {
-                    this.scene.stop("End");
-                    this.scene.start('Start'); 
-                });
-        });
 
         const cam = this.cameras.main;
         const centerX = cam.width / 2;
@@ -133,8 +57,8 @@ export class End extends Phaser.Scene {
             fontStyle: 'bold',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 4
-        }).setOrigin(0.5).setScrollFactor(0);
+            strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setResolution(2);
 
         // Replay message
         const replayText = this.add.text(centerX, centerY - 20, "To replay, walk through the doors", {
@@ -143,34 +67,55 @@ export class End extends Phaser.Scene {
             fontStyle: 'bold',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 4
-        }).setOrigin(0.5).setScrollFactor(0);
+            strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setResolution(2);
 
         // Secret gem message
         let gemText = null;
-        if (this.registry.get("Diamond_collected")) {
+        // if (this.registry.get("Diamond_collected")) {
             gemText = this.add.text(centerX, centerY, "Good job finding the secret gem!", {
                 fontFamily: 'Arial',
-                fontSize: '16px',
+                fontSize: '12px',
                 fontStyle: 'bold',
-                color: '#00ff88',
+                color: '#0cc224ff',
                 stroke: '#000000',
                 strokeThickness: 4
-            }).setOrigin(0.5).setScrollFactor(0);
-        }
+            }).setOrigin(0.5).setScrollFactor(0).setResolution(2);
+        // }
 
-        // Remove text after 30 seconds
-        this.time.delayedCall(6000, () => {
-            titleText.destroy();
-            replayText.destroy();
-            if (gemText) gemText.destroy();
+        const CreditText = this.add.text(centerX, centerY + 20, "By Max Brockmann and Will O\’Dell", {
+            fontFamily: 'Arial',
+            fontSize: '12px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setResolution(2);
+
+        this.time.delayedCall(5000, () => {
+            this.tweens.add({
+                targets: [titleText, replayText, gemText, CreditText],
+                alpha: 0,
+                duration: 1500,
+                onComplete: () => {
+                    titleText.destroy();
+                    replayText.destroy();
+                    if (gemText) gemText.destroy();
+                    CreditText.destroy();
+
+                    // NOW build the level
+                    this.buildLevel();
+                }
+            });
         });
+
     }
 
     update(time) {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
-        this.player.update(dt);
+        if (this.player){
+        this.player.update(dt);}
 
         if(this.two.isDown) {
             this.sound.stopAll();
@@ -184,4 +129,86 @@ export class End extends Phaser.Scene {
             this.scene.start('Level_two'); 
         }
     }
+    buildLevel() {
+        this.wallayer = this.map.createLayer("Walls", this.tileset, 0, 0);
+        this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
+        if (this.registry.get("Diamond_collected")) {
+            this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        }
+        this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
+        this.objlayer = this.map.getObjectLayer("Objects");
+
+        this.wallayer.setCollisionBetween(1,1767);
+
+        this.exit = this.physics.add.staticGroup();
+        this.platforms = this.physics.add.staticGroup();
+
+        this.spawnpoint = [0, 0];
+
+        this.objlayer.objects.forEach(objData => {
+            const {x = 0, y = 0, name, width = 0, height = 0} = objData;
+            switch(name) {
+                case "Exit":
+                    const exi = this.exit.create(
+                        x + (width * 0.5),
+                        y + (height * 0.5)
+                    );
+                    exi.setOrigin(0.5);
+                    exi.setSize(width, height);
+                    exi.setVisible(false);
+                    break;
+                case "Platform":
+                    const plat = this.platforms.create(
+                        x + (width * 0.5),
+                        y + (height * 0.5)
+                    );
+                    plat.setOrigin(0.5);
+                    plat.setSize(width, height);
+                    plat.setVisible(false);
+                    break;
+                case "Spawn":
+                    this.spawnpoint = [x + 8, y + 8];
+                    break;
+            }
+        });
+
+        // Create a player
+        this.player = new Player(
+            this,
+            this.spawnpoint[0],
+            this.spawnpoint[1],
+            'player',
+            1
+        );
+        this.player.setDepth(2);
+        this.player.spawnpoint = this.spawnpoint;
+
+        this.physics.add.collider(this.wallayer, this.player);
+        this.physics.add.collider(this.player, this.platforms);
+
+        // Camera setup
+        this.cameras.main.startFollow(this.player);
+        this.cameras.main.setLerp(0.15, 0.15);
+        this.cameras.main.setRoundPixels(true);
+        this.cameras.main.setBounds(
+            0,
+            0,
+            this.map.widthInPixels,
+            this.map.heightInPixels
+        );
+
+        // Exit
+        this.physics.add.overlap(this.player, this.exit, (player, exit) => {
+            this.sound.stopAll();
+            this.lvl_OverSound.play({volume: 0.45});
+            player.body.enable = false;
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+
+            this.time.delayedCall(1000, () => {
+                this.scene.stop("End");
+                this.scene.start('Start'); 
+            });
+        });
+    }
+
 }
