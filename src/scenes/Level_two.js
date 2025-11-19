@@ -20,6 +20,8 @@ export class Level_two extends Phaser.Scene {
         this.load.audio('dead_s', 'sounds/vsgame_0/death.wav');
         this.load.audio('lvl_win', 'sounds/vsgame_0/round_end.wav');
         this.load.audio('Key_sound', 'sounds/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('jump','sounds/kenney_rpg-audio/Audio/footstep05.ogg');
+        this.load.audio('wjump','sounds/kenney_rpg-audio/Audio/handleSmallLeather.ogg');
         this.load.audio('djump','sounds/kenney_rpg-audio/Audio/cloth2.ogg');
         this.load.audio('dash', 'sounds/kenney_rpg-audio/Audio/dropLeather.ogg')
         this.load.audio('music3', 'sounds/uplift-atmospheric-jungle-dnb-electronic-loopable-edit-435842.mp3');
@@ -51,21 +53,28 @@ export class Level_two extends Phaser.Scene {
         this.obslayer = this.map.createLayer("Obsticals", this.tileset, 0, 0);
         this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
         this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
-        this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
-        this.gatelayer = this.map.createLayer("Gate", this.tileset, 0, 0);
+        if (!this.registry.get('Key_Collected')) {
+            this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        }
+        if (!this.registry.get('gate_Opened')) {
+            this.gatelayer = this.map.createLayer("Gate", this.tileset, 0, 0);
+        }
         this.buttonlayer = this.map.createLayer("Button", this.tileset, 0, 0);
         this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
         //this.platlayer.setCollisionBetween(1,1767);
         this.wallayer.setCollisionBetween(1,1767);
-        this.gatelayer.setCollisionBetween(1,1767);
+        if (!this.registry.get('gate_Opened')) {
+            this.gatelayer.setCollisionBetween(1,1767);
+        }
         //this.doorlayer.setCollision(58);
 
         this.exit = this.physics.add.staticGroup();
         this.pickups = this.physics.add.staticGroup();
         this.platforms = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
+        this.sexit = this.physics.add.staticGroup();
         this.buttons = this.physics.add.staticGroup();
 
         this.spawnpoint = [0,0];
@@ -78,6 +87,13 @@ export class Level_two extends Phaser.Scene {
                     exi.setOrigin(0.5);
                     exi.setSize(width, height);
                     exi.setVisible(false);
+                    break;
+                case "SExit":
+                    const sexi = this.sexit.create(x + (width * 0.5), y + (height * 0.5), null);
+                    sexi.setOrigin(0.5);
+                    sexi.setSize(width, height);
+                    sexi.setVisible(false);
+                    break;
                 case "Key":
                     const pickup = this.pickups.create(x + (width * 0.5), y + (height * 0.5), null);
                     pickup.setOrigin(0.5);
@@ -93,6 +109,11 @@ export class Level_two extends Phaser.Scene {
                     break;
                 case "Spawn":
                     this.spawnpoint = [x + 8,y + 8];
+                    break;
+                case "SSpawn":
+                    if (this.registry.get('Secret_Level_Accessed')) {
+                        this.spawnpoint = [x + 8,y + 8];
+                    }
                     break;
                 case "Spikes":
                     const rect = this.spikes.create(x + (width * 0.5), y + (height * 0.5), null);
@@ -129,10 +150,18 @@ export class Level_two extends Phaser.Scene {
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
-        this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
-
-        this.keyCollected = false;
-        this.gateOpened = false;
+        this.gateCollider = null;
+        if (!this.registry.get('gate_Opened')) {
+            this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
+        }
+        this.keyCollected = true;
+         this.gateOpened = true;
+        if (!this.registry.get('gate_Opened')) {
+            this.gateOpened = false;
+        }
+        if (!this.registry.get('Key_Collected')) {
+                this.keyCollected = false;
+            }
         this.canPlayUnlockSound = true;
 
 
@@ -159,16 +188,19 @@ export class Level_two extends Phaser.Scene {
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
-            this.keyCollected = false;
             if (this.keyCollected) {
                 this.KeySound.play({volume: 0.8});
+                this.registry.set('Key_Collected', false);
+                this.keyCollected = false;
             }
             this.pickups.children.iterate(pickup => {
                 if (!pickup) return;
                 pickup.body.enable = true;
             });
             this.itemlayer.setVisible(true);
+
             this.gateOpened = false;
+            this.registry.set('gate_Opened', false);
             this.gatelayer.setVisible(true);
             this.gateCollider.overlapOnly = false;
         });
@@ -185,6 +217,7 @@ export class Level_two extends Phaser.Scene {
             if(type === "Key") {
                 this.KeySound.play({volume: 0.8});
                 this.keyCollected = true;
+                this.registry.set('Key_Collected', true);
                 this.itemlayer.setVisible(false);
             };
 
@@ -210,7 +243,8 @@ export class Level_two extends Phaser.Scene {
 
                     // Delay scene transition by 1 second
                     this.time.delayedCall(1000, () => {
-                        console.log("Go to next level or ending or something");
+                        this.scene.stop("Level_two");
+                        this.scene.start('End'); 
                     });
                 }
             } else {
@@ -222,10 +256,25 @@ export class Level_two extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.buttons, (player, button) => {
             if (!this.gateOpened) {
                 this.gateOpened = true
+                this.registry.set('gate_Opened', true);
                 this.unlockSound.play({ volume: 0.8 });
             }
             this.gatelayer.setVisible(false);
             this.gateCollider.overlapOnly = true;
+        });
+
+        this.physics.add.overlap(this.player, this.sexit, (player, sexi) => {
+            console.log('Secret Door!');
+            player.body.enable = false;
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.sound.stopAll();
+            this.lvl_OverSound.play({volume: 0.45});
+
+            // Delay scene transition by 1 second
+            this.time.delayedCall(1000, () => {
+                this.scene.stop("Level_two");
+                this.scene.start('Level_Secret'); 
+            });
         });
     }
 

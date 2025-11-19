@@ -1,6 +1,8 @@
 import { Start } from './scenes/Start.js';
 import { Level_one } from './scenes/Level_one.js';
 import { Level_two } from './scenes/Level_two.js';
+import { Level_Secret } from './scenes/Level_Secret.js';
+import { End } from './scenes/End_of_Game.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -18,6 +20,9 @@ const config = {
         Start,
         Level_one,
         Level_two,
+        Level_Secret,
+        End
+
     ],
     scale: {
         mode: Phaser.Scale.FIT,

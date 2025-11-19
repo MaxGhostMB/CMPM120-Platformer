@@ -139,8 +139,8 @@ export class Start extends Phaser.Scene {
                     if (!pickup) return;
                     pickup.body.enable = true;
                 });
-                this.itemlayer.setVisible(true);
             }
+            this.itemlayer.setVisible(true);
         });
 
         //Platforms
