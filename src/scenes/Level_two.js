@@ -168,8 +168,9 @@ export class Level_two extends Phaser.Scene {
                 pickup.body.enable = true;
             });
             this.itemlayer.setVisible(true);
+            this.gateOpened = false;
             this.gatelayer.setVisible(true);
-            this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
+            this.gateCollider.overlapOnly = false;
         });
 
         //Platforms
@@ -224,7 +225,7 @@ export class Level_two extends Phaser.Scene {
                 this.unlockSound.play({ volume: 0.8 });
             }
             this.gatelayer.setVisible(false);
-            this.physics.world.removeCollider(this.gateCollider);
+            this.gateCollider.overlapOnly = true;
         });
     }
 

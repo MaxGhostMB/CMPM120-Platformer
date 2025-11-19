@@ -59,6 +59,7 @@ export class Start extends Phaser.Scene {
         //this.doorlayer.setCollision(58);
 
         this.exit = this.physics.add.staticGroup();
+        this.sexit = this.physics.add.staticGroup();
         this.pickups = this.physics.add.staticGroup();
         this.platforms = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
@@ -85,6 +86,12 @@ export class Start extends Phaser.Scene {
                     plat.setOrigin(0.5);
                     plat.setSize(width, height);
                     plat.setVisible(false);
+                    break;
+                case "SExit":
+                    const sexi = this.sexit.create(x + (width * 0.5), y + (height * 0.5), null);
+                    sexi.setOrigin(0.5);
+                    sexi.setSize(width, height);
+                    sexi.setVisible(false);
                     break;
                 case "Spawn":
                     this.spawnpoint = [x + 8,y + 8];
@@ -179,6 +186,20 @@ export class Start extends Phaser.Scene {
             } else {
                 console.log('The door is locked.');
             }
+        });
+
+        this.physics.add.overlap(this.player, this.sexit, (player, sexi) => {
+            console.log('Secret Door!');
+            player.body.enable = false;
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.sound.stopAll();
+            this.lvl_OverSound.play({volume: 0.45});
+
+            // Delay scene transition by 1 second
+            this.time.delayedCall(1000, () => {
+                this.scene.stop("Start");
+                this.scene.start('Level_two'); 
+            });
         });
     }
 
