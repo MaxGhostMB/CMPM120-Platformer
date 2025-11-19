@@ -17,9 +17,9 @@ const config = {
       // arcade:{debug:true}
     },
     scene: [
-        Start,
-        Level_one,
-        Level_two,
+        // Start,
+        // Level_one,
+        // Level_two,
         Level_Secret,
         End
 

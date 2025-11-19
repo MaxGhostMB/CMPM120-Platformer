@@ -151,15 +151,17 @@ export class Level_Secret extends Phaser.Scene {
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
-            this.gemCollected = false;
             if (this.gemCollected) {
                 this.GemSound.play({volume: 0.8});
+                this.gemCollected = false;
             }
             this.registry.set('Diamond_collected', false);
             this.pickups.children.iterate(pickup => {
                 if (!pickup) return;
                 pickup.body.enable = true;
             });
+            this.registry.set('Key_Collected', false);
+            this.registry.set('gate_Opened', false);
         });
 
         //Platforms
