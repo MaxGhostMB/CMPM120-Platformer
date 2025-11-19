@@ -19,6 +19,8 @@ export class Level_one extends Phaser.Scene {
         this.load.audio('lvl_win', 'sounds/vsgame_0/round_end.wav');
         this.load.audio('Key_sound', 'sounds/kenney_rpg-audio/Audio/handleCoins.ogg');
         this.load.audio('press', 'sounds/kenney_rpg-audio/Audio/chop.ogg');
+        this.load.audio('jump','sounds/kenney_rpg-audio/Audio/footstep05.ogg');
+        this.load.audio('wjump','sounds/kenney_rpg-audio/Audio/handleSmallLeather.ogg');
         this.load.audio('djump','sounds/kenney_rpg-audio/Audio/cloth2.ogg');
         this.load.audio('dash', 'sounds/kenney_rpg-audio/Audio/dropLeather.ogg')
         this.load.audio('music2', 'sounds/uplift-atmospheric-jungle-dnb-electronic-435843.mp3');
@@ -158,7 +160,7 @@ export class Level_one extends Phaser.Scene {
 
             if(type === "Key") {
                 this.keyCollected = true;
-                this.KeySound.play({volume: 0.9});
+                this.KeySound.play({volume: 1.0});
             }
 
             // avoiding picking up multiple times
