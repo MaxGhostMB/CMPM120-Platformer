@@ -158,7 +158,7 @@ export class Level_two extends Phaser.Scene {
 
         //Spike collision
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
-            this.player.damage();
+            player.damage();
             this.keyCollected = false;
             if (this.keyCollected) {
                 this.KeySound.play({volume: 0.8});
@@ -168,6 +168,8 @@ export class Level_two extends Phaser.Scene {
                 pickup.body.enable = true;
             });
             this.itemlayer.setVisible(true);
+            this.gatelayer.setVisible(true);
+            this.gateCollider = this.physics.add.collider(this.gatelayer, this.player);
         });
 
         //Platforms
