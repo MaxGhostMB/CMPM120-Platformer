@@ -105,6 +105,11 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
             this.keyCollected = false;
+            // makes all pickups pick-up-able again
+            this.pickups.children.iterate(pickup => {
+                if (!pickup) return;
+                pickup.body.enable = true;
+            });
             this.itemlayer.setVisible(true);
         });
 
@@ -121,13 +126,10 @@ export class Level_one extends Phaser.Scene {
                 this.keyCollected = true;
             }
 
+            // avoiding picking up multiple times
+            pickup.body.enable = false;
             //this works weirdly if there are multiple items in a level, but is fine for this
             this.itemlayer.setVisible(false);
-
-            //const tileX = this.map.worldToTileX(pickup.x);
-            //const tileY = this.map.worldToTileY(pickup.y);
-            //this creates a small lagspike for some reason
-            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
         // door unlock

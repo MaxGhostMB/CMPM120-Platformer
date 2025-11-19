@@ -203,7 +203,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             if(this.grounded) {
                 if(this.space.isDown) {
                     this.coyote = 0; //Prevents Coyote time from contributing to jump height
-                    this.body.setVelocityY(-225); // jump a bit higher 
+                    this.body.setVelocityY(-275); // jump a bit higher 
                     this.jumpDelay = 0.05;
                 }
             } else {
@@ -359,4 +359,3 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         //    this.body.setVelocityX(200);
         //    this.setFlipX(false);
         //}
-
