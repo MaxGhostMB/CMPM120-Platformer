@@ -14,14 +14,25 @@ export class Level_one extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_1_map', 'assets/LevelOne.tmj');
-        this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
-        this.load.audio('lvl_win', 'assets/vsgame_0/round_end.wav');
-        this.load.audio('Key_sound', 'assets/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('dead_s', 'sounds/vsgame_0/death.wav');
+        this.load.audio('lvl_win', 'sounds/vsgame_0/round_end.wav');
+        this.load.audio('Key_sound', 'sounds/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('djump','sounds/kenney_rpg-audio/Audio/cloth2.ogg');
+        this.load.audio('dash', 'sounds/kenney_rpg-audio/Audio/dropLeather.ogg')
+        this.load.audio('music2', 'sounds/uplift-atmospheric-jungle-dnb-electronic-435843.mp3');
     }
 
     create() {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 32;
+
+        this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+        this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+
+        this.sound.play('music2', {
+            loop:true,
+            volume:0.4
+        });
 
         this.map = this.make.tilemap({ key: 'Level_1_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -145,7 +156,8 @@ export class Level_one extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.exit, (player, exit) => {
             if (this.keyCollected) {
                 console.log('Door unlocked!');
-                this.lvl_OverSound.play({volume: 0.8});
+                this.sound.stopAll();
+                this.lvl_OverSound.play({volume: 0.45});
                 player.body.enable = false;
                 this.cameras.main.fadeOut(1000, 0, 0, 0);
 
@@ -165,5 +177,17 @@ export class Level_one extends Phaser.Scene {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
         this.player.update(dt);
+
+        if(this.one.isDown) {
+
+            this.scene.stop("Level_one");
+            this.scene.start('Start'); 
+        }
+
+        if(this.three.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_one");
+            this.scene.start('Level_two'); 
+        }
     }
 }

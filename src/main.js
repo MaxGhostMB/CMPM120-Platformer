@@ -7,12 +7,12 @@ const config = {
     title: 'CMPM 120 Project Skeleton',
     description: '',
     parent: 'game-container',
-    width: 512,
-    height: 256,
+    width: 384,
+    height: 192,
     backgroundColor: '#000000',
     pixelArt: false,
     physics: {default: "arcade", 
-       arcade:{debug:true}
+      // arcade:{debug:true}
     },
     scene: [
         Start,

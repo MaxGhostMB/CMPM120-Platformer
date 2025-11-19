@@ -183,6 +183,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                             this.dashing = true;
                             this.dashrepressed = false;
 
+                            this.scene.sound.play('dash', {volume:0.8});
+
                             this.slamming = false;
                             this.body.velocity.y = 0;
                             this.cur_speed = 300 * (this.right.isDown - this.left.isDown);
@@ -201,10 +203,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
             // Jumping
             if(this.grounded) {
-                if(this.space.isDown) {
+                if(this.space.isDown && this.jumpDelay <= 0) {
+                    this.jumpDelay = 0.05;
                     this.coyote = 0; //Prevents Coyote time from contributing to jump height
                     this.body.setVelocityY(-250); // jump a bit higher 
-                    this.jumpDelay = 0.05;
+                    this.scene.sound.play('jump');
                 }
             } else {
                 if (Phaser.Input.Keyboard.JustDown(this.space) && this.jumpDelay < 0) {
@@ -213,6 +216,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         this.body.setVelocityY(-250);
                         this.clingtime = 0;
                         this.cur_speed = 100 * (this.left.isDown - this.right.isDown);
+                        this.scene.sound.play('wjump', {detune:600 - 300 * this.walljumps, volume:1.5});
                         this.walljumps -= 1;
                         this.canhold = true;
                     } else if(this.djump) {
@@ -222,6 +226,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         this.jumpDelay = 0.1;
                         this.clingtime = 0;
                         this.canhold = false;
+
+                        this.scene.sound.play('djump', {volume:0.7});
 
                         //djump particles
                         this.scene.add.particles(0, 0, 'vapor', {
@@ -260,7 +266,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             if (!this.body.blocked.down) {
                 this.coyote -= dt;
                 if (this.coyote < 0) this.grounded = false;
-            } else {
+            } else if(this.jumpDelay <= 0) {
                 this.coyote = 0.1;
                 this.grounded = true;
                 this.slamming = false;
@@ -274,7 +280,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             //Slamming physics
             if(this.slamming) {
                 this.cur_speed = 0;
-                this.body.setVelocityY(400);            
+                this.body.setVelocityY(400);
+                
+                this.scene.add.particles(0, 0, 'vapor', {
+                    anim: ['dissipate'],
+                    angle: { min: 250, max: 290 },
+                    x: this.x - 1.5 + Math.random() * 3,
+                    y: this.y,
+                    speed: 30,
+                    //frequency: 25,
+                    duration: 125,
+                    scale: 0.1,
+                    color: [0xDDDDDD, 0x999999]
+                });
             }
 
             // Gravity adjustments
@@ -297,7 +315,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.anims.play('idle', true);
             }
 
-            //Particles
+            //Dashing Particles
             if(this.dashing) {
                 this.scene.add.particles(0, 0, 'vapor', {
                     anim: ['dissipate'],

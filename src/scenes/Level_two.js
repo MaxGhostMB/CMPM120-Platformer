@@ -16,15 +16,26 @@ export class Level_two extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('Level_2_map', 'assets/LevelTwo.tmj');
-        this.load.audio('unlock_gate', 'assets/kenney_rpg-audio/Audio/metalLatch.ogg');
-        this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
-        this.load.audio('lvl_win', 'assets/vsgame_0/round_end.wav');
-        this.load.audio('Key_sound', 'assets/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('unlock_gate', 'sounds/kenney_rpg-audio/Audio/metalLatch.ogg');
+        this.load.audio('dead_s', 'sounds/vsgame_0/death.wav');
+        this.load.audio('lvl_win', 'sounds/vsgame_0/round_end.wav');
+        this.load.audio('Key_sound', 'sounds/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('djump','sounds/kenney_rpg-audio/Audio/cloth2.ogg');
+        this.load.audio('dash', 'sounds/kenney_rpg-audio/Audio/dropLeather.ogg')
+        this.load.audio('music3', 'sounds/uplift-atmospheric-jungle-dnb-electronic-loopable-edit-435842.mp3');
     }
 
     create() {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 32;
+
+        this.sound.play('music3', {
+            loop:true,
+            volume:0.5
+        });
+
+        this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+        this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
 
         this.map = this.make.tilemap({ key: 'Level_2_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -171,11 +182,11 @@ export class Level_two extends Phaser.Scene {
             if(type === "Key") {
                 this.KeySound.play({volume: 0.8});
                 this.keyCollected = true;
+                this.itemlayer.setVisible(false);
             };
 
             //this works weirdly if there are multiple items in a level, but is fine for this
             pickup.body.enable = false;
-            this.itemlayer.setVisible(false);
 
             //const tileX = this.map.worldToTileX(pickup.x);
             //const tileY = this.map.worldToTileY(pickup.y);
@@ -188,7 +199,8 @@ export class Level_two extends Phaser.Scene {
             if (this.keyCollected) {
                 if (!exit.opened) {
                     exit.opened = true;
-                    this.lvl_OverSound.play({volume: 0.8});
+                    this.sound.stopAll();
+                    this.lvl_OverSound.play({volume: 0.45});
                     player.body.enable = false;
                     console.log('Door unlocked!');
                     this.cameras.main.fadeOut(1000, 0, 0, 0);
@@ -229,5 +241,17 @@ export class Level_two extends Phaser.Scene {
             this.player.onPlatform = null;
         }
         this.player.update(dt);
+
+        if(this.one.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_two");
+            this.scene.start('Start'); 
+        }
+
+        if(this.two.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_two");
+            this.scene.start('Level_one'); 
+        }
     }
 }

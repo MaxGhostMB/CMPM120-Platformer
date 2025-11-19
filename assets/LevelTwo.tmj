@@ -518,8 +518,8 @@
                  "type":"",
                  "visible":true,
                  "width":13.3060875350473,
-                 "x":722.805683600247,
-                 "y":289.882621299244
+                 "x":721.2,
+                 "y":289.1
                 }, 
                 {
                  "height":63.7017123487815,
@@ -597,6 +597,17 @@
                  "width":48.25,
                  "x":288.125,
                  "y":463.8
+                }, 
+                {
+                 "height":6.75,
+                 "id":28,
+                 "name":"Platform",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48.25,
+                 "x":351.875,
+                 "y":207.8
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -750,8 +761,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":13,
- "nextobjectid":28,
+ "nextlayerid":14,
+ "nextobjectid":31,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

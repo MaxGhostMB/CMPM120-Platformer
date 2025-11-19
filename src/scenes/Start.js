@@ -15,14 +15,27 @@ export class Start extends Phaser.Scene {
         this.load.image('monochrome_tilemap', 'assets/kenney_1-bit-platformer-pack/Tilemap/monochrome_tilemap.png');
         this.load.tilemapTiledJSON('map', 'assets/Bare_bones.tmj');
         this.load.tilemapTiledJSON('tutorial_map', 'assets/Tutorial.tmj');
-        this.load.audio('dead_s', 'assets/vsgame_0/death.wav');
-        this.load.audio('lvl_win', 'assets/vsgame_0/round_end.wav');
-        this.load.audio('Key_sound', 'assets/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('dead_s', 'sounds/vsgame_0/death.wav');
+        this.load.audio('lvl_win', 'sounds/vsgame_0/round_end.wav');
+        this.load.audio('Key_sound', 'sounds/kenney_rpg-audio/Audio/handleCoins.ogg');
+        this.load.audio('jump','sounds/kenney_rpg-audio/Audio/footstep05.ogg');
+        this.load.audio('wjump','sounds/kenney_rpg-audio/Audio/handleSmallLeather.ogg');
+        this.load.audio('djump','sounds/kenney_rpg-audio/Audio/cloth2.ogg');
+        this.load.audio('dash', 'sounds/kenney_rpg-audio/Audio/dropLeather.ogg')
+        this.load.audio('music', 'sounds/chill-relaxed-breakbeat-dnb-loop-edit-373484.mp3');
     }
 
     create() {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 32;
+
+        this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
+        this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+
+        this.sound.play('music', {
+            loop:true,
+            volume:0.5
+        });
 
         this.map = this.make.tilemap({ key: 'tutorial_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -97,7 +110,7 @@ export class Start extends Phaser.Scene {
 
         // Camera follows player
         this.cameras.main.startFollow(this.player);
-        this.cameras.main.setLerp(0.1, 0.1);
+        this.cameras.main.setLerp(0.15, 0.15);
         this.cameras.main.setRoundPixels(true);
 
         // Set camera bounds to map size
@@ -154,7 +167,8 @@ export class Start extends Phaser.Scene {
                 console.log('Door unlocked!');
                 player.body.enable = false;
                 this.cameras.main.fadeOut(1000, 0, 0, 0);
-                this.lvl_OverSound.play({volume: 0.8});
+                this.sound.stopAll();
+                this.lvl_OverSound.play({volume: 0.45});
 
                 // Delay scene transition by 1 second
                 this.time.delayedCall(1000, () => {
@@ -172,5 +186,17 @@ export class Start extends Phaser.Scene {
         let dt = (time - this.last_time)/1000;
         this.last_time = time;
         this.player.update(dt);
+
+        if(this.two.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Start");
+            this.scene.start('Level_one'); 
+        }
+
+        if(this.three.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Start");
+            this.scene.start('Level_two'); 
+        }
     }
 }
