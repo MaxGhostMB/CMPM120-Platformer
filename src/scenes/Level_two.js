@@ -31,6 +31,9 @@ export class Level_two extends Phaser.Scene {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 58;
 
+        this.registry.set('Key_Collected', false);
+        this.registry.set('gate_Opened', false);
+
         this.sound.play('music3', {
             loop:true,
             volume:0.5
