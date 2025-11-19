@@ -27,7 +27,7 @@ export class Level_two extends Phaser.Scene {
 
     create() {
         this.last_time = 0;
-        this.physics.world.TILE_BIAS = 32;
+        this.physics.world.TILE_BIAS = 58;
 
         this.sound.play('music3', {
             loop:true,
@@ -160,13 +160,19 @@ export class Level_two extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.spikes, (player, spikes) => {
             player.damage();
             this.keyCollected = false;
-            if (this.keyCollected) {
-                this.KeySound.play({volume: 0.8});
-            }
             this.pickups.children.iterate(pickup => {
                 if (!pickup) return;
                 pickup.body.enable = true;
             });
+
+            this.buttons.children.iterate(butt => {
+                if (!butt) return;
+                butt.body.enable = true;
+                const tileX = this.map.worldToTileX(butt.x);
+                const tileY = this.map.worldToTileY(butt.y);
+                this.buttonlayer.putTileAt(9, tileX, tileY);
+            });
+
             this.itemlayer.setVisible(true);
             this.gateOpened = false;
             this.gatelayer.setVisible(true);
@@ -190,11 +196,6 @@ export class Level_two extends Phaser.Scene {
 
             //this works weirdly if there are multiple items in a level, but is fine for this
             pickup.body.enable = false;
-
-            //const tileX = this.map.worldToTileX(pickup.x);
-            //const tileY = this.map.worldToTileY(pickup.y);
-            //this creates a small lagspike for some reason
-            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
         });
 
         // door unlock
@@ -222,10 +223,13 @@ export class Level_two extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.buttons, (player, button) => {
             if (!this.gateOpened) {
                 this.gateOpened = true
-                this.unlockSound.play({ volume: 0.8 });
+                this.unlockSound.play({ volume: 1.0 });
             }
             this.gatelayer.setVisible(false);
             this.gateCollider.overlapOnly = true;
+            const tileX = this.map.worldToTileX(button.x);
+            const tileY = this.map.worldToTileY(button.y);
+            this.buttonlayer.putTileAt(69, tileX, tileY);
         });
     }
 
