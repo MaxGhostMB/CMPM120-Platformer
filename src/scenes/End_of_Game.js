@@ -72,7 +72,7 @@ export class End extends Phaser.Scene {
 
         // Secret gem message
         let gemText = null;
-        // if (this.registry.get("Diamond_collected")) {
+        if (this.registry.get("Diamond_collected")) {
             gemText = this.add.text(centerX, centerY, "Good job finding the secret gem!", {
                 fontFamily: 'Arial',
                 fontSize: '12px',
@@ -81,7 +81,7 @@ export class End extends Phaser.Scene {
                 stroke: '#000000',
                 strokeThickness: 4
             }).setOrigin(0.5).setScrollFactor(0).setResolution(2);
-        // }
+        }
 
         const CreditText = this.add.text(centerX, centerY + 20, "By Max Brockmann and Will O\’Dell", {
             fontFamily: 'Arial',
