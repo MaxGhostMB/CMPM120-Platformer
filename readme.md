@@ -35,3 +35,4 @@ for its duration, there you can find a key and a door that allows you to go dire
 - level 3s secret area saves the data of the previous level, acting more as an extension
 - the gem seen in level 3s secret area requires the secret key from level 1 to get
 
+Royalty Free Music source: Musinova
