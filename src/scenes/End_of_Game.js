@@ -29,8 +29,10 @@ export class End extends Phaser.Scene {
         this.last_time = 0;
         this.physics.world.TILE_BIAS = 32;
 
+        this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
         this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
         this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+        this.four = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
         this.sound.play('music', {
             loop:true,
@@ -117,16 +119,28 @@ export class End extends Phaser.Scene {
         if (this.player){
         this.player.update(dt);}
 
+        if(this.one.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("End");
+            this.scene.start('Start'); 
+        }
+
         if(this.two.isDown) {
             this.sound.stopAll();
-            this.scene.stop("Start");
+            this.scene.stop("End");
             this.scene.start('Level_one'); 
         }
 
         if(this.three.isDown) {
             this.sound.stopAll();
-            this.scene.stop("Start");
+            this.scene.stop("End");
             this.scene.start('Level_two'); 
+        }
+
+        if(this.four.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("End");
+            this.scene.start('Level_Secret'); 
         }
     }
     buildLevel() {

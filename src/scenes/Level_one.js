@@ -32,6 +32,7 @@ export class Level_one extends Phaser.Scene {
 
         this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
         this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+        this.four = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
         this.sound.play('music2', {
             loop:true,
@@ -208,7 +209,7 @@ export class Level_one extends Phaser.Scene {
         this.player.update(dt);
 
         if(this.one.isDown) {
-
+            this.sound.stopAll();
             this.scene.stop("Level_one");
             this.scene.start('Start'); 
         }
@@ -217,6 +218,12 @@ export class Level_one extends Phaser.Scene {
             this.sound.stopAll();
             this.scene.stop("Level_one");
             this.scene.start('Level_two'); 
+        }
+
+        if(this.four.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_one");
+            this.scene.start('Level_Secret'); 
         }
     }
 }

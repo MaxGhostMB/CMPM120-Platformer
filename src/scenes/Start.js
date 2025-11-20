@@ -31,6 +31,7 @@ export class Start extends Phaser.Scene {
 
         this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
         this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+        this.four = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
         this.sound.play('music', {
             loop:true,
@@ -250,6 +251,12 @@ export class Start extends Phaser.Scene {
             this.sound.stopAll();
             this.scene.stop("Start");
             this.scene.start('Level_two'); 
+        }
+
+        if(this.four.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Start");
+            this.scene.start('Level_Secret'); 
         }
     }
 }

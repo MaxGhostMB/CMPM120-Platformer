@@ -38,6 +38,7 @@ export class Level_two extends Phaser.Scene {
 
         this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
         this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
+        this.four = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
 
         this.map = this.make.tilemap({ key: 'Level_2_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -317,6 +318,12 @@ export class Level_two extends Phaser.Scene {
             this.sound.stopAll();
             this.scene.stop("Level_two");
             this.scene.start('Level_one'); 
+        }
+
+        if(this.four.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_two");
+            this.scene.start('Level_Secret'); 
         }
     }
 }
