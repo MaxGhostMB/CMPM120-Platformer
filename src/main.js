@@ -6,7 +6,7 @@ import { End } from './scenes/End_of_Game.js';
 
 const config = {
     type: Phaser.AUTO,
-    title: 'CMPM 120 Project Skeleton',
+    title: 'Frog in the Dungeon',
     description: '',
     parent: 'game-container',
     width: 384,
