@@ -40,6 +40,7 @@ export class Level_Secret extends Phaser.Scene {
 
         this.one = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
         this.two = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
+        this.three = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
 
         this.map = this.make.tilemap({ key: 'Level_S_map', tileWidth: 16, tileHeight: 16 });
         this.tileset = this.map.addTilesetImage('monochrome_tilemap');
@@ -58,6 +59,12 @@ export class Level_Secret extends Phaser.Scene {
         this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
         this.objlayer = this.map.getObjectLayer("Objects");
         
+        //Need secret key to get gems
+        if(!this.registry.get('SKey')) {
+            this.gblock = this.map.createLayer('GemBlocker',this.tileset,0,0);
+            this.gblock.setCollisionBetween(1,1767);
+        }
+
         // Collision
         this.wallayer.setCollisionBetween(1,1767);
       
@@ -123,6 +130,9 @@ export class Level_Secret extends Phaser.Scene {
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
+        if(!this.registry.get('SKey')) {
+            this.physics.add.collider(this.gblock, this.player);
+        }
 
         this.gemCollected = false;
         this.canPlayUnlockSound = true;
@@ -221,14 +231,20 @@ export class Level_Secret extends Phaser.Scene {
 
         if(this.one.isDown) {
             this.sound.stopAll();
-            this.scene.stop("Level_two");
+            this.scene.stop("Level_Secret");
             this.scene.start('Start'); 
         }
 
         if(this.two.isDown) {
             this.sound.stopAll();
-            this.scene.stop("Level_two");
+            this.scene.stop("Level_Secret");
             this.scene.start('Level_one'); 
+        }
+
+        if(this.three.isDown) {
+            this.sound.stopAll();
+            this.scene.stop("Level_Secret");
+            this.scene.start('Level_two'); 
         }
     }
 }
