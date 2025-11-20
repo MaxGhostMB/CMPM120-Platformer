@@ -58,6 +58,12 @@ export class Level_Secret extends Phaser.Scene {
         this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
         this.objlayer = this.map.getObjectLayer("Objects");
         
+        //Need secret key to get gems
+        if(!this.registry.get('SKey')) {
+            this.gblock = this.map.createLayer('GemBlocker',this.tileset,0,0);
+            this.gblock.setCollisionBetween(1,1767);
+        }
+
         // Collision
         this.wallayer.setCollisionBetween(1,1767);
       
@@ -123,6 +129,9 @@ export class Level_Secret extends Phaser.Scene {
         this.player.setDepth(2);
         this.physics.add.collider(this.platlayer, this.player);
         this.physics.add.collider(this.wallayer, this.player);
+        if(!this.registry.get('SKey')) {
+            this.physics.add.collider(this.gblock, this.player);
+        }
 
         this.gemCollected = false;
         this.canPlayUnlockSound = true;

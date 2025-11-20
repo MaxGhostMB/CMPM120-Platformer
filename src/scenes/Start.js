@@ -51,6 +51,7 @@ export class Start extends Phaser.Scene {
         this.declayer = this.map.createLayer("Decor", this.tileset, 0, 0);
         this.doorlayer = this.map.createLayer("Doors", this.tileset, 0, 0);
         this.itemlayer = this.map.createLayer("Items", this.tileset, 0, 0);
+        this.skeylayer = this.map.createLayer("SKey", this.tileset, 0, 0);
         this.objlayer = this.map.getObjectLayer("Objects");
         
         // Collision
@@ -63,6 +64,7 @@ export class Start extends Phaser.Scene {
         this.pickups = this.physics.add.staticGroup();
         this.platforms = this.physics.add.staticGroup();
         this.spikes = this.physics.add.staticGroup();
+        this.skey = this.physics.add.staticGroup();
 
         this.spawnpoint = [0,0];
 
@@ -93,6 +95,12 @@ export class Start extends Phaser.Scene {
                     sexi.setSize(width, height);
                     sexi.setVisible(false);
                     break;
+                case "SKey":
+                    const skey = this.skey.create(x + (width * 0.5), y + (height * 0.5), null);
+                    skey.setOrigin(0.5);
+                    skey.setSize(width, height);
+                    skey.setVisible(false);
+                    break;
                 case "Spawn":
                     this.spawnpoint = [x + 8,y + 8];
                     break;
@@ -106,6 +114,14 @@ export class Start extends Phaser.Scene {
                     console.log("Unknown object: " + name);
             }
         });
+
+        if (this.registry.get('SKey')) {
+            this.skeylayer.setVisible(false);
+            this.skey.children.iterate(sk => {
+                if (!sk) return;
+                sk.body.enable = false;
+            });
+        }
 
         // Create a player
         this.player = new Player(this, this.spawnpoint[0], this.spawnpoint[1], 'player', 1);
@@ -161,6 +177,22 @@ export class Start extends Phaser.Scene {
             pickup.body.enable = false;
             //this works weirdly if there are multiple items in a level, but is fine for this
             this.itemlayer.setVisible(false);
+
+            //const tileX = this.map.worldToTileX(pickup.x);
+            //const tileY = this.map.worldToTileY(pickup.y);
+            //this creates a small lagspike for some reason
+            //this.map.removeTileAt(tileX, tileY, false, false, 'Items');
+        });
+
+        this.physics.add.overlap(this.player, this.skey, (player, skey) => {
+            console.log(`Got Secret Key`);
+            this.KeySound.play({volume: 0.8});
+
+            // avoiding picking up multiple times
+            skey.body.enable = false;
+            this.registry.set('SKey',true);
+            //this works weirdly if there are multiple items in a level, but is fine for this
+            this.skeylayer.setVisible(false);
 
             //const tileX = this.map.worldToTileX(pickup.x);
             //const tileY = this.map.worldToTileY(pickup.y);
